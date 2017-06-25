@@ -1,0 +1,111 @@
+#!/usr/bin/perl
+
+use DM;
+use GetTime;
+use CGI ':standard';
+use CGI::Carp qw(fatalsToBrowser);
+use Chart::Graph::Gnuplot qw(&gnuplot);
+
+$|=1;
+
+$Chart::Graph::Gnuplot::gnuplot  = "/usr/bin/gnuplot";
+$Chart::Graph::Gnuplot::ppmtogif = "/usr/bin/ppmtogif";
+
+
+print "Content-type:text/html\n\n";
+
+$db_handle = DM->connect
+    or die("Could not connect! \n");
+
+$tmpdir="$DM::APACHE_ROOT/$DM::HTMLDIR/tmp";
+$url="/tmp";
+
+my $minTime = GetTime->getTime(6);
+
+my @ch0_data;
+my @ch0_tsdata;
+$sql = "SELECT * FROM caen_brd1_ch0_i WHERE timestamp>'$minTime' ORDER BY timestamp ASC";
+$statement = $db_handle->prepare($sql) or die "Couldn't prepare query '$sql': $DBI::errstr\n";
+$statement->execute() or die "Couldn't execute query '$sql': $DBI::errstr\n";
+while ($row_ref = $statement->fetchrow_hashref())
+{
+  push( @ch0_tsdata,   $row_ref->{timestamp});
+  push( @ch0_data,    $row_ref->{value});
+}
+
+my @ch1_data;
+my @ch1_tsdata;
+$sql = "SELECT * FROM caen_brd1_ch1_i WHERE timestamp>'$minTime' ORDER BY timestamp ASC";
+$statement = $db_handle->prepare($sql) or die "Couldn't prepare query '$sql': $DBI::errstr\n";
+$statement->execute() or die "Couldn't execute query '$sql': $DBI::errstr\n";
+while ($row_ref = $statement->fetchrow_hashref())
+{
+    push( @ch1_tsdata,   $row_ref->{timestamp});
+    push( @ch1_data,    $row_ref->{value});
+}
+
+my @ch2_data;
+my @ch2_tsdata;
+$sql = "SELECT * FROM caen_brd1_ch2_i WHERE timestamp>'$minTime' ORDER BY timestamp ASC";
+$statement = $db_handle->prepare($sql) or die "Couldn't prepare query '$sql': $DBI::errstr\n";
+$statement->execute() or die "Couldn't execute query '$sql': $DBI::errstr\n";
+while ($row_ref = $statement->fetchrow_hashref())
+{
+    push( @ch2_tsdata,   $row_ref->{timestamp});
+    push( @ch2_data,    $row_ref->{value});
+}
+
+my @ch3_data;
+my @ch3_tsdata;
+$sql = "SELECT * FROM caen_brd1_ch3_i WHERE timestamp>'$minTime' ORDER BY timestamp ASC";
+$statement = $db_handle->prepare($sql) or die "Couldn't prepare query '$sql': $DBI::errstr\n";
+$statement->execute() or die "Couldn't execute query '$sql': $DBI::errstr\n";
+while ($row_ref = $statement->fetchrow_hashref())
+{
+    push( @ch3_tsdata,   $row_ref->{timestamp});
+    push( @ch3_data,    $row_ref->{value});
+}
+
+
+my @cathode_data;
+my @cathode_tsdata;
+$sql = "SELECT * FROM caen_brd0_ch3_i WHERE timestamp>'$minTime' ORDER BY timestamp ASC";
+$statement = $db_handle->prepare($sql) or die "Couldn't prepare query '$sql': $DBI::errstr\n";
+$statement->execute() or die "Couldn't execute query '$sql': $DBI::errstr\n";
+while ($row_ref = $statement->fetchrow_hashref())
+{
+  push( @cathode_tsdata,  $row_ref->{timestamp});
+  push( @cathode_data,    $row_ref->{value});
+}
+my $count0 = @ch0_data;
+my $count1 = @ch1_data;
+my $count2 = @ch2_data;
+my $count3 = @ch3_data;
+my $count4 = @cathode_data;
+
+my $imagename ="Caen_HV_current";
+#$imagename.=time(); 
+
+if ($count0 > 0 || $count1 > 0 || $count2 > 0 || $count3 > 0 || $count4 > 0){
+
+gnuplot({"title"=>"Chamber Current Chart", "output file"=>"$tmpdir/$imagename.gif", "output type"=>"gif",
+	 "x-axis label"=>"Time Stamp", "y-axis label"=>"HV Current (uA)",
+	 "xdata"=>"time", "timefmt"=>"%Y-%m-%d %H:%M:%S",
+	 "extra_opts"=>join("\n","set grid")  },
+	 [{"title"=>"Anode TL measured", "style"=>"linespoints", "type"=>"columns", "using"=>"1:3"}, \@ch0_tsdata, \@ch0_data ],
+	 [{"title"=>"Anode TR measured", "style"=>"linespoints", "type"=>"columns", "using"=>"1:3"}, \@ch1_tsdata, \@ch1_data ],
+	 [{"title"=>"Anode BR measured", "style"=>"linespoints", "type"=>"columns", "using"=>"1:3"}, \@ch2_tsdata, \@ch2_data ],
+	 [{"title"=>"Anode BL measured", "style"=>"linespoints", "type"=>"columns", "using"=>"1:3"}, \@ch3_tsdata, \@ch3_data ],
+#	 [{"title"=>"Cathode measured", "style"=>"linespoints", "type"=>"columns", "using"=>"1:3"}, \@cathode_tsdata, \@cathode_data ]
+       );
+       
+print "$url/$imagename.gif"; 
+
+#print "<p>Current voltages:";
+#print " anode = @pdata[$np-1]kV   ";
+#print " drift = @mdata[$nm-1]kV <\p";
+}else{
+print "gfx/norecent.png";
+}
+
+$db_handle->disconnect();

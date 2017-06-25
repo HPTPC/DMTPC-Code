@@ -1,0 +1,135 @@
+<html>
+	<head>
+	<title> DMTPC - Mission Control </title>
+
+  <link rel="stylesheet" href="styles.css" type="text/css"/>
+	<script type="text/javascript" src="jquery.min.js"></script>
+  <script type="text/javascript" src="jquery.form.min.js"></script>
+	<script>
+	
+	$(document).ready(function()
+	{
+    $('#slowControl').load('../cgi-bin/printpars.pl');
+	  var refId = setInterval(function()
+    {
+      $('#slowControl').load('../cgi-bin/printpars.pl');
+    },1000); 
+
+    $('#setter').ajaxForm(function() {
+    });
+
+    $('#detname').load('../cgi-bin/getdet'); 
+    $('#menu').load('../cgi-bin/makemenu',function(){$('#li_slow').addClass("active");});   
+
+   }); 
+
+	
+	</script>
+
+
+	</head>
+
+  <body>
+
+  <div id="all">
+  <img src="gfx/webpageheader.png" alt="DMTPC - Mission Control" />
+  <div id="detname">
+   </div>
+  <div id="menu">
+  </div>
+
+  <div id="main">
+  <div id="monitor">
+    <small>
+    <div id="slowControl">
+    loading...
+    </div>
+    </small>
+  </div>
+    <div align="center"> 
+      <a onClick='$.get("../cgi-bin/runsc",{action: "start"});' href="#"> <!-- # MAL: does this work? -->
+        <img name="start" 
+        onmouseout="document.start.src='gfx/start_sc.png'" 
+        onmouseover="document.start.src='gfx/start_sc_lit.png'" 
+        src="gfx/start_sc.png" alt="start" title="Start slow control"></a>
+      <a onClick='$.get("../cgi-bin/runsc",{action: "stop"});' href="#"> 
+        <img 
+        name="stop"
+        onmouseout="document.stop.src='gfx/stop_sc.png'" 
+        onmouseover="document.stop.src='gfx/stop_sc_lit.png'" 
+        src="gfx/stop_sc.png" alt="stop" title="Stop slow control" ></a>
+
+      <a onClick='$.get("../cgi-bin/toggleSparkMonitor");' href="#"> 
+        <img name="klack"
+        onmouseout="document.klack.src='gfx/nosparkmon.png'"
+        onmouseover="document.klack.src='gfx/sparkmon.png'"
+        src="gfx/nosparkmon.png" alt="klack" title="Start/stop spark monitor" height="150" width="150" hspace="10" vspace="20"></a>
+
+        <br/>
+        <hr/>
+        <!--
+        <p> High Voltage: <br/>
+          <a onClick='$.get("../cgi-bin/ramphv",{status: "1"});' href="#">[ Ramp UP ]</a>
+          &nbsp;&nbsp;|&nbsp;&nbsp; 
+          <a onClick='$.get("../cgi-bin/ramphv",{status: "-1"});' href="#">[ Ramp DOWN ]</a>
+        </p>
+        -->
+        <p>
+        <a onClick='$.get("../cgi-bin/ramphv",{status: "1"});' href="#">
+         <img name="rampup" 
+        onmouseout="document.rampup.src='gfx/ramp_up.png'" 
+        onmouseover="document.rampup.src='gfx/ramp_up_lit.png'" 
+        src="gfx/ramp_up.png" alt="ramp up" title="Ramp Up HV">
+        </a>
+        <a onClick='$.get("../cgi-bin/ramphv",{status: "-1"});' href="#">
+         <img name="rampdown" 
+        onmouseout="document.rampdown.src='gfx/ramp_down.png'" 
+        onmouseover="document.rampdown.src='gfx/ramp_down_lit.png'" 
+        src="gfx/ramp_down.png" alt="ramp down" title="Ramp Down HV">
+        </a>
+        <a onClick='$.get("../cgi-bin/setpress",{action: "refill"});' href="#">
+         <img name="refill" 
+        onmouseout="document.refill.src='gfx/refill.png'" 
+        onmouseover="document.refill.src='gfx/refill_lit.png'" 
+        src="gfx/refill.png" alt="refill" title="Refill">
+        </a>
+
+        <a onClick='$.get("../cgi-bin/setpress",{action: "adjust"});' href="#">
+         <img name="adjust" 
+        onmouseout="document.adjust.src='gfx/adjust.png'" 
+        onmouseover="document.adjust.src='gfx/adjust_lit.png'" 
+        src="gfx/adjust.png" alt="adjust" title="Adjust">
+        </a>
+        </p>
+
+ <!-- 
+        <hr/>
+        <p> Pressure:  <br/>
+          <a onClick='$.get("../cgi-bin/setpress",{WHAT: "refill"});' href="#">[ Refill ]</a>
+          &nbsp;&nbsp;|&nbsp;&nbsp; 
+          <a onClick='$.get("../cgi-bin/setpress",{WHAT: "adjust"});' href="#">[ Adjust ]</a>
+        </p>
+        -->
+        <hr/>
+        <form id="setter" action="../cgi-bin/setparam" method="post">
+        <p id="formp">
+          <label for="value">Set parameter: </label> <input type="text" name="value"><br>
+          <input type="radio" name="type" value="caen_brd1_ch0_set_hv"> Anode 4sh-TL voltage [V]<br>
+	  <input type="radio" name="type" value="caen_brd1_ch1_set_hv"> Anode 4sh-TR voltage [V]<br> 
+	  <input type="radio" name="type" value="caen_brd1_ch2_set_hv"> Anode 4sh-BR voltage [V]<br> 
+	  <input type="radio" name="type" value="caen_brd1_ch3_set_hv"> Anode 4sh-BL voltage [V]<br> 
+	  <input type="radio" name="type" value="caen_brd0_ch3_set_hv"> Cathode 4sh voltage [V]<br>
+	  <input type="radio" name="type" value="caen_brd0_ch1_set_hv"> PMT voltage [V]<br>
+
+<!--          <input type="radio" name="type" value="mfc"> MFC Flow Rate (in Volts [0V-5V])<br> -->
+      <!--    <input type="radio" name="type" value="set_pmt_hv"> PMT voltage [V]<br> -->
+<!--	  <input type="radio" name="type" value="set_pressure"> Pressure (Torr)<br> -->
+          <input type="submit"  value="Send"><input type="reset">
+        </p>
+        </form>
+
+    </div>
+  </div>
+
+</div>
+</body></html>

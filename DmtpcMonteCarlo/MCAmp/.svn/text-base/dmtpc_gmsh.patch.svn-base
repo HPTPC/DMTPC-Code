@@ -1,0 +1,456 @@
+Index: Post/shapeFunctions.h
+===================================================================
+--- Post/shapeFunctions.h	(revision 17649)
++++ Post/shapeFunctions.h	(working copy)
+@@ -11,6 +11,8 @@
+ 
+ #define SQU(a)  ((a)*(a))
+ 
++namespace shapeFunctions
++{
+ class element{
+ protected:
+   bool _ownData;
+@@ -984,7 +986,7 @@
+     }
+   }
+ };
+-
++}
+ #undef SQU
+ 
+ #endif
+Index: Post/OctreePost.cpp
+===================================================================
+--- Post/OctreePost.cpp	(revision 17649)
++++ Post/OctreePost.cpp	(working copy)
+@@ -18,6 +18,8 @@
+ 
+ // helper routines for list-based views
+ 
++using namespace shapeFunctions; 
++
+ static void minmax(int n, double *X, double *Y, double *Z,
+                    double *min, double *max)
+ {
+Index: Post/shapeFunctions.cpp
+===================================================================
+--- Post/shapeFunctions.cpp	(revision 17649)
++++ Post/shapeFunctions.cpp	(working copy)
+@@ -5,4 +5,4 @@
+ 
+ #include "shapeFunctions.h"
+ 
+-double element::TOL = 1.e-6;
++double shapeFunctions::element::TOL = 1.e-6;
+Index: Plugin/NearToFarField.h
+===================================================================
+--- Plugin/NearToFarField.h	(revision 17649)
++++ Plugin/NearToFarField.h	(working copy)
+@@ -35,12 +35,12 @@
+   StringXString *getOptionStr(int iopt);
+   PView *execute(PView *);
+ 
+-  double getFarFieldJin(std::vector<element*> &allElems,
++  double getFarFieldJin(std::vector<shapeFunctions::element*> &allElems,
+                         std::vector<std::vector<double> > &js,
+                         std::vector<std::vector<double> > &ms,
+                         double k0, double r_far, double theta, double phi);
+ 
+-  double getFarFieldMonk(std::vector<element*> &allElems,
++  double getFarFieldMonk(std::vector<shapeFunctions::element*> &allElems,
+                          std::vector<std::vector<double> > &farfieldvector,
+                          std::vector<std::vector<double> > &js,
+                          std::vector<std::vector<double> > &ms,
+Index: Plugin/Scal2Vec.cpp
+===================================================================
+--- Plugin/Scal2Vec.cpp	(revision 17649)
++++ Plugin/Scal2Vec.cpp	(working copy)
+@@ -6,7 +6,9 @@
+ #include "Scal2Vec.h"
+ #include "PViewOptions.h"
+ #include "shapeFunctions.h"
++using namespace shapeFunctions; 
+ 
++
+ StringXNumber Scal2VecOptions_Number[] = {
+   {GMSH_FULLRC, "ViewX", NULL, -1.},
+   {GMSH_FULLRC, "ViewY", NULL, -1.},
+Index: Plugin/Curl.cpp
+===================================================================
+--- Plugin/Curl.cpp	(revision 17649)
++++ Plugin/Curl.cpp	(working copy)
+@@ -6,6 +6,7 @@
+ #include "Curl.h"
+ #include "shapeFunctions.h"
+ #include "GmshDefines.h"
++using namespace shapeFunctions; 
+ 
+ StringXNumber CurlOptions_Number[] = {
+   {GMSH_FULLRC, "View", NULL, -1.}
+Index: Plugin/NearToFarField.cpp
+===================================================================
+--- Plugin/NearToFarField.cpp	(revision 17649)
++++ Plugin/NearToFarField.cpp	(working copy)
+@@ -10,6 +10,7 @@
+ #include <complex>
+ #include "NearToFarField.h"
+ #include "OS.h"
++using namespace shapeFunctions; 
+ 
+ StringXNumber NearToFarFieldOptions_Number[] = {
+   {GMSH_FULLRC, "Wavenumber",       NULL, 1.},
+Index: Plugin/Gradient.cpp
+===================================================================
+--- Plugin/Gradient.cpp	(revision 17649)
++++ Plugin/Gradient.cpp	(working copy)
+@@ -6,7 +6,9 @@
+ #include "Gradient.h"
+ #include "shapeFunctions.h"
+ #include "GmshDefines.h"
++using namespace shapeFunctions;
+ 
++
+ StringXNumber GradientOptions_Number[] = {
+   {GMSH_FULLRC, "View", NULL, -1.}
+ };
+Index: Plugin/Divergence.cpp
+===================================================================
+--- Plugin/Divergence.cpp	(revision 17649)
++++ Plugin/Divergence.cpp	(working copy)
+@@ -7,6 +7,8 @@
+ #include "shapeFunctions.h"
+ #include "GmshDefines.h"
+ 
++using namespace shapeFunctions;
++
+ StringXNumber DivergenceOptions_Number[] = {
+   {GMSH_FULLRC, "View", NULL, -1.}
+ };
+Index: Plugin/Integrate.cpp
+===================================================================
+--- Plugin/Integrate.cpp	(revision 17649)
++++ Plugin/Integrate.cpp	(working copy)
+@@ -6,6 +6,7 @@
+ #include "Integrate.h"
+ #include "shapeFunctions.h"
+ #include "PViewOptions.h"
++using namespace shapeFunctions;
+ 
+ StringXNumber IntegrateOptions_Number[] = {
+   {GMSH_FULLRC, "View", NULL, -1.},
+Index: Geo/GModelFactory.h
+===================================================================
+--- Geo/GModelFactory.h	(revision 17649)
++++ Geo/GModelFactory.h	(working copy)
+@@ -30,8 +30,20 @@
+   virtual GVertex *addVertex(GModel *gm, double x, double y, double z,
+                              double lc) = 0;
+   virtual GEdge *addLine(GModel *, GVertex *v1, GVertex *v2) = 0;
++  virtual GEdge *addBSpline(GModel *, std::vector<GVertex*>)
++  {
++    Msg::Error("addBSpline not implemented yet");
++    return 0;
++  }
+   virtual GFace *addPlanarFace(GModel *gm, std::vector<std::vector<GEdge *> > edges) = 0;
+   virtual GRegion*addVolume(GModel *gm, std::vector<std::vector<GFace *> > faces) = 0;
++  virtual GEdge *addEllipseArc(GModel *gm, GVertex * start, GVertex * center, GVertex *pointonmajor, GVertex * end)  
++  {
++
++    Msg::Error("addEllipseArc not implemented yet");
++    return 0;
++
++  }
+   virtual GEdge *addCircleArc(GModel *gm, GVertex *start, GVertex *center, GVertex *end)
+   {
+     Msg::Error("addCircleArc not implemented yet");
+@@ -224,6 +236,8 @@
+   GeoFactory(){}
+   GVertex *addVertex(GModel *gm,double x, double y, double z, double lc);
+   GEdge *addLine(GModel *gm,GVertex *v1, GVertex *v2);
++  GEdge *addBSpline(GModel *, std::vector<GVertex*>);
++  GEdge *addEllipseArc(GModel *gm, GVertex * start, GVertex * center, GVertex *pointonmajor, GVertex * end); 
+   GFace *addPlanarFace(GModel *gm, std::vector<std::vector<GEdge *> > edges);
+   GRegion *addVolume(GModel *gm, std::vector<std::vector<GFace *> > faces);
+   GEdge *addCircleArc(GModel *gm,GVertex *begin, GVertex *center, GVertex *end);
+Index: Geo/GModel.h
+===================================================================
+--- Geo/GModel.h	(revision 17649)
++++ Geo/GModel.h	(working copy)
+@@ -135,6 +135,9 @@
+   void _storePhysicalTagsInEntities(int dim,
+                                     std::map<int, std::map<int, std::string> > &map);
+ 
++  // recalculate max elementary number
++  void _recalculateMaxElementaryNumber(int dim);
++
+   // entity that is currently being meshed (used for error reporting)
+   GEntity *_currentMeshEntity;
+ 
+@@ -149,6 +152,7 @@
+   std::set<GFace*, GEntityLessThan> faces;
+   std::set<GEdge*, GEntityLessThan> edges;
+   std::set<GVertex*, GEntityLessThan> vertices;
++  int maxElementaryNumber[4];
+ 
+   // map between the pair <dimension, elementary or physical number>
+   // and an optional associated name
+@@ -274,10 +278,34 @@
+   std::vector<int> getEdgesByStringTag(const std::string tag);
+ 
+   // add/remove an entity in the model
+-  void add(GRegion *r) { regions.insert(r); }
+-  void add(GFace *f) { faces.insert(f); }
+-  void add(GEdge *e) { edges.insert(e); }
+-  void add(GVertex *v) { vertices.insert(v); }
++  void add(GRegion *r)
++  {
++    regions.insert(r);
++    const int dim = r->dim();
++    maxElementaryNumber[dim] = std::max(maxElementaryNumber[dim],
++					std::abs(r->tag()));
++  }
++  void add(GFace *f)
++  {
++    faces.insert(f);
++    const int dim = f->dim();
++    maxElementaryNumber[dim] = std::max(maxElementaryNumber[dim],
++					std::abs(f->tag()));
++  }
++  void add(GEdge *e)
++  {
++    edges.insert(e);
++    const int dim = e->dim();
++    maxElementaryNumber[dim] = std::max(maxElementaryNumber[dim],
++					std::abs(e->tag()));
++  }
++  void add(GVertex *v)
++  {
++    vertices.insert(v);
++    const int dim = v->dim();
++    maxElementaryNumber[dim] = std::max(maxElementaryNumber[dim],
++					std::abs(v->tag()));
++  }
+   void remove(GRegion *r);
+   void remove(GFace *f);
+   void remove(GEdge *e);
+@@ -491,6 +519,8 @@
+   // create brep geometry entities using the factory
+   GVertex *addVertex(double x, double y, double z, double lc);
+   GEdge *addLine(GVertex *v1, GVertex *v2);
++  GEdge *addBSpline(std::vector<GVertex*> control_points);
++  GEdge *addEllipseArc(GVertex *start, GVertex *center, GVertex * pointonmajor, GVertex *end);
+   GEdge *addCircleArcCenter(double x, double y, double z, GVertex *start, GVertex *end);
+   GEdge *addCircleArcCenter(GVertex *start, GVertex *center, GVertex *end);
+   GEdge *addCircleArc3Points(double x, double y, double z, GVertex *start, GVertex *end);
+Index: Geo/GModelFactory.cpp
+===================================================================
+--- Geo/GModelFactory.cpp	(revision 17649)
++++ Geo/GModelFactory.cpp	(working copy)
+@@ -42,6 +42,31 @@
+   return v;
+ }
+ 
++GEdge *GeoFactory::addBSpline(GModel *gm, std::vector<GVertex *> control_points)
++{
++  int num =  gm->getMaxElementaryNumber(1) + 1;
++  List_T *iList = List_Create(control_points.size(), control_points.size(), sizeof(int));
++  for (unsigned i = 0; i < control_points.size(); i++)
++  {
++    int tag = control_points[i]->tag(); 
++    List_Add(iList, &tag);
++  }
++
++  Curve *c = Create_Curve(num, MSH_SEGM_BSPLN, 2, iList, NULL,
++			  -1,-1,  0., 1.);
++  
++  Tree_Add(gm->getGEOInternals()->Curves, &c);
++  CreateReversedCurve(c);
++  List_Delete(iList);
++  c->Typ = MSH_SEGM_BSPLN;
++  c->Num = num;
++
++  GEdge *e = new gmshEdge(gm, c, control_points[0], control_points[control_points.size()-1]);
++  gm->add(e);
++
++  return e;
++}
++
+ GEdge *GeoFactory::addLine(GModel *gm, GVertex *start, GVertex *end)
+ {
+   int num =  gm->getMaxElementaryNumber(1) + 1;
+@@ -208,6 +233,35 @@
+   return gr;
+ }
+ 
++GEdge *GeoFactory::addEllipseArc(GModel *gm, GVertex * start, GVertex * center, GVertex *pointonmajor, GVertex * end) 
++{
++
++  int num =  gm->getMaxElementaryNumber(1) + 1;
++  List_T *iList = List_Create(4, 4, sizeof(int));
++  int tagBeg = start->tag();
++  int tagMiddle = center->tag();
++  int tagMajor = pointonmajor->tag();
++  int tagEnd = end->tag();
++  List_Add(iList, &tagBeg);
++  List_Add(iList, &tagMiddle);
++  List_Add(iList, &tagMajor);
++  List_Add(iList, &tagEnd);
++
++  Curve *c = Create_Curve(num, MSH_SEGM_ELLI, 1, iList, NULL,
++			  -1, -1, 0., 1.);
++  Tree_Add(gm->getGEOInternals()->Curves, &c);
++  CreateReversedCurve(c);
++  List_Delete(iList);
++  c->Typ = MSH_SEGM_CIRC;
++  c->Num = num;
++
++  GEdge *e = new gmshEdge(gm, c, start, end);
++  gm->add(e);
++
++  return e;
++
++}
++
+ GEdge* GeoFactory::addCircleArc(GModel *gm,GVertex *begin, GVertex *center, GVertex *end)
+ {
+   int num =  gm->getMaxElementaryNumber(1) + 1;
+Index: Geo/GModel.cpp
+===================================================================
+--- Geo/GModel.cpp	(revision 17649)
++++ Geo/GModel.cpp	(working copy)
+@@ -89,6 +89,8 @@
+ #if defined(HAVE_MESH)
+   _fields = new FieldManager();
+ #endif
++  for(int i = 0; i < 4; ++i)
++    maxElementaryNumber[i] = 0;
+ }
+ 
+ GModel::~GModel()
+@@ -203,6 +205,8 @@
+     delete *it;
+   vertices.clear();
+ 
++  _recalculateMaxElementaryNumber(-1);
++
+   destroyMeshCaches();
+ 
+   if(normals) delete normals;
+@@ -300,25 +304,45 @@
+ void GModel::remove(GRegion *r)
+ {
+   riter it = std::find(firstRegion(), lastRegion(), r);
+-  if(it != (riter)regions.end()) regions.erase(it);
++  if(it != (riter)regions.end()){
++    const int tag = (*it)->tag(), dim = (*it)->dim();
++    regions.erase(it);
++    if(maxElementaryNumber[dim] == std::abs(tag))
++      _recalculateMaxElementaryNumber(dim);
++  }
+ }
+ 
+ void GModel::remove(GFace *f)
+ {
+   fiter it = std::find(firstFace(), lastFace(), f);
+-  if(it != faces.end()) faces.erase(it);
++  if(it != faces.end()){
++    const int tag = (*it)->tag(), dim = (*it)->dim();
++    faces.erase(it);
++    if(maxElementaryNumber[dim] == std::abs(tag))
++      _recalculateMaxElementaryNumber(dim);
++  }
+ }
+ 
+ void GModel::remove(GEdge *e)
+ {
+   eiter it = std::find(firstEdge(), lastEdge(), e);
+-  if(it != edges.end()) edges.erase(it);
++  if(it != edges.end()){
++    const int tag = (*it)->tag(), dim = (*it)->dim();
++    edges.erase(it);
++    if(maxElementaryNumber[dim] == std::abs(tag))
++      _recalculateMaxElementaryNumber(dim);
++  }
+ }
+ 
+ void GModel::remove(GVertex *v)
+ {
+   viter it = std::find(firstVertex(), lastVertex(), v);
+-  if(it != vertices.end()) vertices.erase(it);
++  if(it != vertices.end()){
++    const int tag = (*it)->tag(), dim = (*it)->dim();
++    vertices.erase(it);
++    if(maxElementaryNumber[dim] == std::abs(tag))
++      _recalculateMaxElementaryNumber(dim);
++  }
+ }
+ 
+ void GModel::snapVertices()
+@@ -365,17 +389,40 @@
+   entities.insert(entities.end(), regions.begin(), regions.end());
+ }
+ 
+-int GModel::getMaxElementaryNumber(int dim)
++void GModel::_recalculateMaxElementaryNumber(int dim)
+ {
+   std::vector<GEntity*> entities;
+   getEntities(entities);
+-  int num = 0;
+-  for(unsigned int i = 0; i < entities.size(); i++)
+-    if(dim < 0 || entities[i]->dim() == dim)
+-      num = std::max(num, std::abs(entities[i]->tag()));
+-  return num;
++  if(dim >= 0){
++    int num = 0;
++    for(unsigned int i = 0; i < entities.size(); i++)
++      if(entities[i]->dim() == dim)
++	num = std::max(num, std::abs(entities[i]->tag()));
++    maxElementaryNumber[dim] = num;
++  }else{
++    for(int i = 0; i < 4; ++i)
++      maxElementaryNumber[i] = 0;
++    for(unsigned int i = 0; i < entities.size(); i++){
++      const int dim = entities[i]->dim();
++      if(dim >= 0)
++	maxElementaryNumber[dim] = std::max(maxElementaryNumber[dim],
++					    std::abs(entities[i]->tag()));
++    }
++  }
+ }
+ 
++int GModel::getMaxElementaryNumber(int dim)
++{
++  if(dim >= 0)
++    return maxElementaryNumber[dim];
++  else{
++    int num = 0;
++    for(int i = 0; i < 4; ++i)
++      num = std::max(num, maxElementaryNumber[i]);
++    return num;
++  }
++}
++
+ bool GModel::noPhysicalGroups()
+ {
+   std::vector<GEntity*> entities;
+@@ -2666,6 +2713,19 @@
+   return 0;
+ }
+ 
++GEdge *GModel::addBSpline(std::vector<GVertex*> pts)
++{
++  if(_factory) return _factory->addBSpline(this, pts);
++  return 0;
++}
++
++GEdge *GModel::addEllipseArc(GVertex *start, GVertex *center, GVertex * pointonmajor, GVertex *end)
++{
++  if(_factory)
++    return _factory->addEllipseArc(this, start, center,pointonmajor, end);
++  return 0;
++}
++
+ GEdge *GModel::addLine(GVertex *v1, GVertex *v2)
+ {
+   if(_factory) return _factory->addLine(this, v1, v2);

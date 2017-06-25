@@ -1,0 +1,7 @@
+/scratch1/darkmatter/dmtpc/data/m3/AlphaData/dmtpc_m3_alpha_00610.root
+/scratch1/darkmatter/dmtpc/data/m3/AlphaData/dmtpc_m3_alpha_00611.root
+/scratch1/darkmatter/dmtpc/data/m3/AlphaData/dmtpc_m3_alpha_00612.root
+/scratch1/darkmatter/dmtpc/data/m3/AlphaData/dmtpc_m3_alpha_00613.root
+/scratch1/darkmatter/dmtpc/data/m3/AlphaData/dmtpc_m3_alpha_00614.root
+/scratch1/darkmatter/dmtpc/data/m3/AlphaData/dmtpc_m3_alpha_00615.root
+/scratch1/darkmatter/dmtpc/data/m3/AlphaData/dmtpc_m3_alpha_00616.root

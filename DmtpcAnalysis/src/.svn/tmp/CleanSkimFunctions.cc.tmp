@@ -1,0 +1,1128 @@
+
+
+#include "CleanSkimFunctions.hh"
+#include <assert.h>
+#include "ImageTools.hh" 
+#include "Stitcher.hh"
+#include <fstream>
+#include "StitchInfo.hh"
+#include "ClusterFinding.hh"
+#include "ClusterAlgo.hh"
+#include <cstdio>
+#include "ImageTransforms.hh"
+#include <dirent.h>
+#include "CspWfVector.hh"
+#include "CspWaveform.hh"
+#include "WaveformAnalysis.hh"
+#include "FastWfVector.hh"
+#include "FastWaveform.hh"
+#include "WaveformVector.hh"
+#include "PMTWfVector.hh"
+#include "PMTWaveform.hh"
+#include "TROOT.h"
+#include "FastPulse.hh"
+#include "Pulse.hh"
+#include "PMTPulse.hh"
+#include "CspPulse.hh"
+#include "GainMap.hh"
+#include "SkimDataset.hh"
+#include "SkimEvent.hh"
+#include "Dataset.hh" 
+#include "CleanSkimConfig.hh"
+#include "TFile.h"
+#include "ImageCalculations.hh" 
+#include "ImageProcessing.hh"
+#include "Iterators.hh"
+#include "Image.hh"
+#include "ImageTemplates.hh" 
+#include "TH2.h"
+
+#include "Waveform.hh"
+
+#define DEBUGOUT 
+
+
+TH2 * dmtpc::analysis::cleanskim::Functions::cleanImage(const TH2 * raw_img, const TH2 * bias, int & nkilled, double raw_rms,  double raw_mean, const TH2 * raw_overscan, double raw_os_mean, double os_bias_mean, const Config * conf)
+{
+
+  TH2F * tempimg = (TH2F*) raw_img->Clone("tempimg");
+
+  image_clean_method_t meth = (image_clean_method_t) conf->getEnum("image_clean_method"); 
+
+  if (meth == IMAGE_CLEAN_BIAS_SUBTRACT_FIRST || meth == IMAGE_CLEAN_MEDIAN_DIFFERENCE)
+  {
+    tempimg->Add(bias,-1);
+  }
+
+
+
+  double perpx = 0;
+
+
+  //Left in for legacy purposes, but this seems silly
+  if (conf->getBool("mc") && !conf->getBool("nokill"))
+  {
+     nkilled = dmtpc::image::processing::killLonePixels2(tempimg, raw_mean + 10*raw_rms);
+  }
+  else if (!conf->getBool("nokill") && (meth == IMAGE_CLEAN_BIAS_SUBTRACT_FIRST || meth == IMAGE_CLEAN_TRADITIONAL))
+  {
+     nkilled = dmtpc::image::processing::killLonePixels2(tempimg,conf->getDouble("outlier_factor")*raw_mean);
+     if (conf->getBool("overscan")) 
+     {
+        TH2F * ostmp =  (TH2F*) raw_overscan->Clone("tempos"); 
+        dmtpc::image::processing::killLonePixels2(ostmp, conf->getDouble("outlier_factor") * raw_os_mean); 
+        perpx = dmtpc::image::calculations::getMean(ostmp) - os_bias_mean; 
+        delete ostmp; 
+     }
+  }
+  else if (!conf->getBool("nokill") && meth == IMAGE_CLEAN_MEDIAN_DIFFERENCE)
+  {
+    nkilled =  dmtpc::image::processing::killLonePixelsMedianDifference(tempimg, conf->getDouble("outlier_factor") * raw_rms); 
+    if (conf->getBool("overscan")) 
+    {
+       TH2F * ostmp =  (TH2F*) raw_overscan->Clone("tempos"); 
+       dmtpc::image::processing::killLonePixelsMedianDifference(ostmp, conf->getDouble("outlier_factor") * raw_rms); 
+       perpx = dmtpc::image::calculations::getMean(ostmp) - os_bias_mean; 
+       delete ostmp; 
+    }
+  }
+
+  if (meth == IMAGE_CLEAN_TRADITIONAL)
+  {
+    tempimg->Add(bias,-1);
+  }
+
+  if (!conf->getBool("overscan"))
+  {
+    perpx = tempimg->Integral() / (tempimg->GetNbinsX() * tempimg->GetNbinsY()); 
+  }
+
+  dmtpc::image::processing::subtractPedestal(tempimg, perpx); 
+
+  return tempimg; 
+}
+
+
+int dmtpc::analysis::cleanskim::Functions::loadGainMaps(GainMap ** gainmaps, SkimDataset * sd,  int n, const Config * conf, const Stitcher * stitch, std::string * camera_ids)
+{
+
+  if (!conf->getBool("gain_map")) 
+  {
+      return 0; 
+  }
+
+
+    TFile gfile(conf->getString("gain_map_file")); 
+    vector<const TH2*> imgs(n); 
+    vector<const GainMap*> gms(n); 
+
+
+    for (int u = 0; u < n; u++)
+    {
+      std::string ser =  camera_ids[u]; 
+
+      if (!stitch)
+      {
+        gainmaps[u]=  ser == "" ? 0 : (GainMap*) gfile.Get(ser.c_str())->Clone();
+        gainmaps[u]->getGainMap()->Scale(gainmaps[u]->getGainMap()->GetNbinsX()*gainmaps[u]->getGainMap()->GetNbinsY()/gainmaps[u]->getGainMap()->Integral());
+        if (sd) sd->addGainMap((GainMap*)gainmaps[u]->Clone());
+      }
+      else
+      {
+        int idx = stitch->getIndex(ser.c_str());
+        gms[idx] =   (GainMap*) gfile.Get(ser.c_str());
+        imgs[idx] =  gms[idx]->getGainMap(); 
+      }
+    }
+
+    gROOT->cd(); 
+
+    if (stitch)
+    {
+      TH2F* stitched_map =  (TH2F*) stitch->stitch(&imgs); 
+      GainMap * newgm = new GainMap("stitched_gainmap"); 
+      newgm->setGainMap(stitched_map); 
+
+      //We need to add spacers now
+
+      vector<vector<TVector3> > spacers;  //r theta w
+
+      double rthresh = conf->getDouble("spacer_join_r"); 
+      double theta_thresh = conf->getDouble("spacer_join_theta");
+
+      for (int i = 0; i < n; i++)
+      {
+        for (unsigned j = 0; j < stitch->getNSpacers(i); j++)
+        {
+          double m = stitch->getSpacerSlope(i,j); 
+          double b = stitch->getSpacerIntercept(i,j); 
+          double w = 32 * stitch->getScale(i); 
+
+          double th = stitch->getRotation(i); 
+          double x0 = stitch->xCenter(i); 
+          double y0 = stitch->yCenter(i); 
+          double c = stitch->getScale(i); 
+
+          double theta = atan(m); 
+          double global_theta = theta - th; 
+//          double global_m = tan(global_theta); 
+          double global_b = cos(theta) > 0.1 ?  c * (b - y0 + m*x0) / (cos(th) + m*sin(th)) : c * ( b/m-y0/m + x0)/(cos(th)/m + sin(th)); 
+
+//          double global_r = global_b / (global_m * global_m + 1); 
+
+          if (isnan(global_b)) continue; 
+
+
+          int merge = false; 
+          for (unsigned k = 0; k < spacers.size(); k++)
+          {
+
+            for (unsigned l = 0; l < spacers[k].size(); l++)
+            {
+
+               double dtheta = fabs(sin(global_theta - spacers[k][l].y())); 
+ //              cout << dtheta << endl; 
+               if (dtheta > theta_thresh) continue; 
+
+               double dr = fabs( global_b - spacers[k][l].x()); 
+               if (dr <= rthresh)
+               {
+                  merge = true; 
+//                  cout << "MERGE" << endl; 
+                  spacers[k].push_back(TVector3(global_b,global_theta,w)); 
+                  break; 
+               } 
+            }
+
+            if (merge) break; 
+          }
+
+          if (!merge)
+          {
+            vector<TVector3> newv; 
+            newv.push_back(TVector3(global_b,global_theta,w)); 
+            spacers.push_back(newv); 
+          }
+        }
+      }
+
+
+      for (unsigned k = 0; k < spacers.size(); k++)
+      {
+
+        double bsum = 0; 
+        double wsum = 0; 
+        double sinsum = 0;
+        double cossum = 0; 
+
+        unsigned ns = spacers[k].size(); 
+        for (unsigned l = 0; l < ns; l++)
+        {
+          bsum += spacers[k][l].x(); 
+          sinsum +=(sin  (spacers[k][l].y())); 
+          cossum +=fabs(cos  (spacers[k][l].y())); 
+          wsum += spacers[k][l].z(); 
+        }
+        double b = bsum/ns; 
+//        double m = sinsum/cossum; 
+        double w = wsum/ns; 
+//        cout << m << " " << b << endl; 
+//        newgm->addSpacer(m,b,w); 
+        newgm->addSpacer(0.000001,b,w); 
+      }
+
+      gainmaps[0] = newgm; 
+      if (sd) sd->addGainMap(newgm); 
+
+    }
+
+    if (sd)  sd->writeGainMaps(); 
+    gfile.Close(); 
+
+    return 0; 
+}
+
+
+TH2 * dmtpc::analysis::cleanskim::Functions::cleanBiasFrame(const TH2 * in, const Config * conf)
+{
+
+  TH2 * out = (TH2*) in->Clone(); 
+  //kill 5 sigma outliers in the bias frame, iterate 3 times
+
+  if (conf->getBool("mc") || (image_clean_method_t) conf->getEnum("image_clean_method") == IMAGE_CLEAN_BIAS_SUBTRACT_FIRST || (image_clean_method_t) conf->getEnum("image_clean_method") == IMAGE_CLEAN_MEDIAN_DIFFERENCE) 
+  {
+    return out; 
+  }
+
+  for (int it = 0; it < 3; it++)
+  {
+    double mean = dmtpc::image::calculations::getMean(out); 
+//    double rms = dmtpc::image::calculations::getRMS(out); 
+
+    dmtpc::image::processing::killPixels(out, mean * conf->getDouble("outlier_factor")); 
+
+  }
+
+  return out; 
+}
+
+TH2 * dmtpc::analysis::cleanskim::Functions::medianBiasFrameStack(TTree * tree, int frame, const Config * conf, bool os) 
+{
+  
+  
+  //  (void) conf; 
+  char branchname[32]; 
+  sprintf(branchname, "%s", os ? "biasOverscans" : "biasFrames"); 
+  //TH2* bias = 0; 
+ 
+  dmtpc::core::Image* bias = 0;
+  // vector< dmtpc::core::Image*> * bias = 0;
+  int n = tree->GetEntries(); 
+  tree->SetBranchAddress(branchname, &bias); 
+  dmtpc::core::TreeIterator<dmtpc::core::Image*> beg(tree,&bias,0); 
+  dmtpc::core::TreeIterator<dmtpc::core::Image*> end(tree,&bias,n); 
+  TH2* median = dmtpc::image::templated::histStackNthElement<unsigned short> (beg,end,n/2, n, 2<<16,true); 
+
+  //median will be a TH2S but we want a TH2F
+  
+
+  //  sprintf(branchname,"%s%d",os ? "biasFrameOverscan":"biasFrame",frame+1); 
+
+//  TH2F * answer = DmtpcDataConverter::ccdExpand((TH2S*) median,branchname); 
+ // delete median; 
+//  return answer; 
+ return median; 
+}
+
+
+dmtpc::analysis::Stitcher * dmtpc::analysis::cleanskim::Functions::loadStitch(int run, const Config * conf)
+{
+
+  const char * stitchFile = 0; 
+  string buf; 
+
+  
+  if (strcasecmp(conf->getString("stitch_file"), "auto"))
+  {
+    stitchFile = conf->getString("stitch_file"); 
+  }
+  else
+  {
+
+    const char * stitch_dir = conf->getString("stitch_dir");  
+
+    DIR * dp; 
+    struct dirent * dirp; 
+
+    if ( (dp = opendir(stitch_dir)) == NULL)
+    {
+      cerr << "Could not open stitch_dir: " << stitch_dir << endl; 
+      return NULL; 
+    }
+
+    vector<int> stitch_runs; 
+
+    while ((dirp = readdir(dp)))
+    {
+         
+        int i;
+        if (sscanf(dirp->d_name,"dmtpc_4sh_%05dstitch.root", &i))
+        {
+          stitch_runs.push_back(i); 
+        }
+    }
+
+    closedir(dp); 
+
+
+    sort(stitch_runs.begin(), stitch_runs.end()); 
+
+     
+    int r = -1; 
+    for (vector<int>::iterator it = stitch_runs.begin(); it!= stitch_runs.end(); it++)
+    {
+      if (*it > run) break; 
+      r = *it; 
+    }
+
+    if (r == -1)
+    {
+      cerr << "Could not find stitch file for run " << run << endl; 
+    }
+    
+    buf.resize(strlen(stitch_dir) + 64); 
+    sprintf(&buf[0], "%s/dmtpc_4sh_%05dstitch.root", stitch_dir, r); 
+    stitchFile = buf.c_str(); 
+  }
+
+
+  //Try to open file
+
+  TFile f(stitchFile); 
+
+  if (!f.IsOpen())
+  {
+    cerr << "Could not open file " << stitchFile << endl; 
+    return NULL; 
+  }
+
+  gROOT->cd(); 
+  Stitcher * stitch = (Stitcher*) (f.Get("stitch")->Clone("cs_stitch")); 
+  
+
+  return stitch; 
+}
+
+
+bool dmtpc::analysis::cleanskim::Functions::checkPartialSpark(const TH2 * img, const Config * conf)
+{
+   TH2C * edges = dmtpc::image::processing::edgeDetect(img, conf->getDouble("partial_blur"), 
+                                               conf->getDouble("partial_low_thresh"),
+                                               conf->getDouble("partial_high_thresh"));  
+
+   int nbinsx = edges->GetNbinsX(); 
+   TH1D * edges_proj = edges->ProjectionX("edges_p",2,nbinsx-1); 
+
+
+   double *  edgesval= new double[nbinsx]; 
+   int  * edgesind= new int[nbinsx]; 
+
+   for (int j = 2; j  < edges_proj->GetNbinsX(); j++)
+   {
+     edgesval[j-1] = edges_proj->GetBinContent(j); 
+   }
+
+   edgesval[0] = 0; 
+   edgesval[nbinsx-1] = 0; 
+
+
+   TMath::Sort(img->GetNbinsX(), edgesval, edgesind); 
+
+   bool spark = false; 
+   if (edgesval[edgesind[0]] > conf->getDouble("partial_n_primary_thresh"))
+   {
+     int p = 1; 
+     bool secedges = false; 
+
+     while (edgesval[edgesind[p]] > conf->getDouble("partial_n_secondary_thresh"))
+     {
+       if (abs(edgesind[p] - edgesind[0]) >= conf->getDouble("partial_dist_low") && 
+           abs(edgesind[p] - edgesind[0]) <= conf->getDouble("partial_dist_high")) 
+       {
+          secedges = true; 
+       }
+
+       p++; 
+     }
+
+     spark = !secedges; 
+
+ }
+
+ delete edges; 
+ delete edges_proj; 
+ delete edgesval; 
+ delete edgesind; 
+
+
+ return spark; 
+}
+
+
+
+void dmtpc::analysis::cleanskim::Functions::populateSparkRef(const TH2 * raw_img, const TH2 * biases, const Config * conf, vector<pair<int,int> > * sparkref_running) 
+{
+
+
+  TH2 * sparkimg = (TH2*) raw_img->Clone("sparkrefimg"); 
+  sparkimg->Add(biases,-1); 
+  int nsat = 0; 
+
+  for (int x = 1; x <= sparkimg->GetNbinsX(); x++)
+  {
+    for (int y = 1; y <= sparkimg->GetNbinsY(); y++)
+    {
+      if (sparkimg->GetBinContent(x,y) > conf->getDouble("sat_thresh"))
+      {
+        nsat++; 
+      }
+    }
+  }
+
+
+  if (nsat > conf->getInt("n_sat_thresh"))
+  {
+    for (int x = 1; x <= sparkimg->GetNbinsX(); x++)
+    {
+      for (int y = 1; y <= sparkimg->GetNbinsY(); y++)
+      {
+         if (sparkimg->GetBinContent(x,y) > conf->getDouble("sat_thresh"))          
+         {
+            sparkref_running->push_back(pair<int,int>(x,y)); 
+         }
+      }
+    }
+
+  }
+
+  sparkimg->Delete(); 
+
+}
+
+
+bool dmtpc::analysis::cleanskim::Functions::checkSpark(const char * cam_id, double mean, double last_mean,  double os_spark_mean, const  Config * conf)
+{
+  
+   bool spark =  (mean-last_mean) / last_mean >   conf->getDoubleMap("spark_cut",cam_id, 1.01); 
+
+   if (conf->getBool("overscan"))
+   {
+      spark = spark || mean - os_spark_mean > ((Config*)conf)->getDoubleMap("overscan_spark_cut",cam_id,0); 
+   }
+
+   return spark;
+}
+
+
+int dmtpc::analysis::cleanskim::Functions::fillCspWfVector(dmtpc::core::Dataset & d, dmtpc::waveform::CspWfVector *cspwv, int ich, int nch)
+{
+  cout << "inside fillCspWfVector( ... ) ..." << endl;
+
+  // general scope info for this event
+  int nent = d.event()->nScopeData(); 
+  int ntr = nent/nch; 
+  // cout << "Nchannels: " << nch << endl;
+  // cout << "Ntriggers: " << ntr << endl; 
+  // cout << "Nentries: " << nent << endl; 
+
+  // loop over the triggers for this specific channel, and pull the waveform and use it to 
+  // fill a SkimWaveform object for each trigger
+  for(int itr=0; itr<ntr; ++itr){ 
+
+    const dmtpc::core::Waveform* wf = d.event()->getTrace(ich,itr,nch);
+    const TH1D *hwf= wf->getPhysical();
+    //    const TH1 *hwf = (TH1*) d.event()->getTrace(ich,itr,nch);
+
+    //cout << "hwf entries = " << hwf->GetEntries() << endl;
+    dmtpc::waveform::CspWaveform cspwf;
+    dmtpc::waveform::analysis::analyzeCSP( hwf , cspwf , 100);
+    cspwf.setTimeSecs(wf->getInfo()->secs);
+    cspwf.setTimeNsecs(wf->getInfo()->nsecs);
+
+    /* useful for debugging
+    dmtpc::waveform::CspPulse cspwfp = cspwf[0];
+    double peak = cspwfp.getPeak();
+    double rms = cspwf.getRMS();
+    double base = cspwf.getBase();
+    double peakbin = cspwfp.getPeakBin();
+    double integral = cspwfp.getIntegral();
+    double R25 = cspwfp.getRise25();
+    double F50 = cspwfp.getFall50();
+    //if (peak > 800.) std::cout << "Peak = " << peak << ": event = " << d.event()->ev() << ", trig = " << itr <<endl;
+    //if (peakbin > 20000) std::cout << "peakbin = " << peakbin << ": event = " << d.event()->ev() << ", trig = " << itr << endl;
+    //if (rms > 1.0) std::cout << "rms = " << rms << ": event = " << d.event()->ev() << ", trig = " << itr <<endl;
+    //if (base > -10.) std::cout << "base = " << base << ": event = " << d.event()->ev() << ", trig = " << itr <<endl;
+    //if (integral < 10000) std::cout << "integral = " << integral << ": event = " << d.event()->ev() << ", trig = " << itr <<endl;
+    //if (R25 > 6000) std::cout << "R25 = " << R25 << ": event = " << d.event()->ev() << ", trig = " << itr <<endl;
+    //if ((F50 > 40000) || (F50 < 25000)) std::cout << "F50 = " << F50 << ": event = " << d.event()->ev() << ", trig = " << itr <<endl;
+    // push this SkimWaveform object onto the WaveformVector for this channel
+    */
+    if (cspwf[0].getPeak() >= 1.) cspwv->add(cspwf);
+  }
+  
+  cout << "cspwv->size()=" << cspwv->size() << endl;
+  //  cout << "exiting fillCspWfVector( ... ) ..." << endl;
+  
+  return 0;
+}
+
+int dmtpc::analysis::cleanskim::Functions::fillPMTWfVector(dmtpc::core::Dataset & d, dmtpc::waveform::PMTWfVector *pmtwv, int ich, int nch)
+{
+  //  cout << "inside fillPMTWfVector( ... ) ..." << endl;
+
+  // general scope info for this event
+  int nent = d.event()->nScopeData(); 
+  int ntr = nent/nch; 
+  //  cout << "Nchannels: " << nch << endl;
+  //  cout << "Ntriggers: " << ntr << endl; 
+  //  cout << "Nentries: " << nent << endl; 
+
+  // loop over the triggers for this specific channel, and pull the waveform and use it to 
+  // fill a SkimWaveform object for each trigger
+  for(int itr=0; itr<ntr; ++itr){ 
+
+    const dmtpc::core::Waveform* wf = d.event()->getTrace(ich,itr,nch);
+    const TH1D *hwf= wf->getPhysical();
+    //TH1 *hwf= (TH1*) d.event()->getTrace(ich,itr,nch);
+    
+    dmtpc::waveform::PMTWaveform pmtwf;
+    dmtpc::waveform::analysis::analyzePMT( hwf , pmtwf , 1.0);
+    pmtwf.setTimeSecs(wf->getInfo()->secs);
+    pmtwf.setTimeNsecs(wf->getInfo()->nsecs);
+    
+    // push this SkimWaveform object onto the WaveformVector for this channel
+    pmtwv->add(pmtwf);
+  }
+  
+  //  cout << "pmtwv->size()=" << pmtwv->size() << endl;
+  //  cout << "exiting fillPMTWfVector( ... ) ..." << endl;
+  
+  return 0;
+}
+
+int dmtpc::analysis::cleanskim::Functions::fillFastWfVector(dmtpc::core::Dataset & d, dmtpc::waveform::FastWfVector *fastwv, int ich, int nch)
+{
+  //  cout << "inside fillFastWfVector( ... ) ..." << endl;
+  
+  // general scope info for this event
+  int nent = d.event()->nScopeData(); 
+  int ntr = nent/nch; 
+  //  cout << "Nchannels: " << nch << endl;
+  //  cout << "Ntriggers: " << ntr << endl; 
+  //  cout << "Nentries: " << nent << endl; 
+  
+  // loop over the triggers for this specific channel, and pull the waveform and use it to 
+  // fill a SkimWaveform object for each trigger
+  for(int itr=0; itr<ntr; ++itr){ 
+    const dmtpc::core::Waveform* wf = d.event()->getTrace(ich,itr,nch);
+    const TH1D *hwf= wf->getPhysical();
+    //TH1 *hwf=(TH1*) d.event()->getTrace(ich,itr,nch);
+    
+    dmtpc::waveform::FastWaveform fastwf;
+    //    cout << "hwf=" << hwf << endl;
+    //    cout << "ich=" << ich << endl;
+    //    cout << "itr=" << itr << endl;
+    dmtpc::waveform::analysis::analyzeFast( hwf , fastwf );
+    //    cout << "just got done with analyzeFast( ... ) ... " << endl;
+    fastwf.setTimeSecs(wf->getInfo()->secs);
+    fastwf.setTimeNsecs(wf->getInfo()->nsecs);
+
+    // push this SkimWaveform object onto the WaveformVector for this channel
+    fastwv->add(fastwf);
+  } 
+  
+  //  cout << "fastwv->size()=" << fastwv->size() << endl;
+  //  cout << "exiting fillFastWfVector( ... ) ..." << endl;
+  
+  return 0;
+}
+
+bool dmtpc::analysis::cleanskim::Functions::burnin_test( double x_delta, double y_delta, const Config * conf)
+{
+  double xd = TMath::Abs(x_delta);
+  double yd = TMath::Abs(y_delta); 
+
+  double th = conf->getDouble("burnin_distance_thresh"); 
+
+  return (xd <= th && yd <= th);
+}
+
+int dmtpc::analysis::cleanskim::Functions::parse_args( int nargs, const char ** args, Setup * setup)
+{
+
+//  int c = 0; 
+  setup->datadir="."; 
+  setup->outdir="skim"; 
+  
+  const char * filename = 0; 
+
+  for (int i = 1; i < nargs; i++)
+  {
+    /* Handle switches */
+    if (args[i][0]=='-')
+    {
+      
+      if(strcmp(args[i],"-c")==0) 
+      {
+        setup->cfgfile = args[++i];
+      }
+
+      if (strcmp(args[i],"-d")==0)
+      {
+        setup->datadir = args[++i]; 
+        printf("Using datadir: %s\n",setup->datadir); 
+      }
+                  
+      if (strcmp(args[i],"-o")==0)
+      {
+        setup->outdir = args[++i]; 
+      }
+
+    }
+    else
+    {
+      filename =  args[i];
+
+      //check if single root file
+      const char * dotroot = strstr(filename,".root"); 
+      if (dotroot  && strlen(dotroot) == strlen(".root"))
+      {
+        setup->files.push_back(filename); 
+      }
+      else //parse file list
+      {
+        std::ifstream infile(filename); 
+        std::string tmp; 
+        while (infile >> tmp) 
+        {
+          setup->string_container.push_back(tmp); 
+          setup->files.push_back(setup->string_container[setup->string_container.size()-1].c_str()); 
+        }
+      }
+    }
+  }
+
+
+  if (!setup->files.size())
+  {
+    std::cerr << "No input files. Aborting!" << std::endl;  
+  }
+
+ 
+  return 0; 
+}
+
+
+vector<dmtpc::analysis::BurninEncoded_t> dmtpc::analysis::cleanskim::Functions::computeTrackBurnin(list<vector<vector<pair<double,double> > > > * positions,
+                                                               std::list<std::vector<std::vector<std::vector<dmtpc::analysis::BurninEncoded_t> > >* > * burnin_temp, 
+                                                               int position_offset, double x, double y, int cam, int track, const Config * conf)
+{
+    vector<BurninEncoded_t> this_track_burnin; 
+    int pos_i = 0; 
+    int u = cam; 
+    int v = track; 
+
+    //Loop over last up to N_LOOPBACK events in search of things at the same position
+    list<vector<vector<pair<double,double> > > >::iterator pos_iter; //iterator for previous positions
+    list<vector<vector<vector<BurninEncoded_t> > >* >::iterator burnin_iter; 
+    
+    for (pos_iter = positions->begin(), burnin_iter = burnin_temp->begin(); 
+         pos_iter != positions->end() ; 
+         pos_iter++, burnin_iter++)
+        {
+           vector<vector<pair<double,double> > > test_positions = *pos_iter; 
+           vector<vector<vector<BurninEncoded_t> > > * test_burnin = *burnin_iter;
+           
+           
+           //Loop over the tracks in these events
+           for(unsigned int z = 0; z<test_positions[u].size(); z++)
+           {
+             pair<double,double> position = test_positions[u][z]; 
+//             if (position[0]==0.0 && position[1] == 0.0) continue; //ignore events with no tracks// huh!?
+             double x_delta = x - position.first;
+             double y_delta = y - position.second;
+
+             if(burnin_test(x_delta, y_delta, conf))
+             {
+               int test_event_index = position_offset + pos_i; 
+               this_track_burnin.push_back(encodeBurnin(z,test_event_index));
+
+               //Mark this event on the other events record...
+               int our_index = position_offset + positions->size();
+               assert(test_event_index != our_index);
+
+               test_burnin->at(u)[z].push_back(encodeBurnin(v,our_index));
+             }
+           }    
+           pos_i++; 
+        }//End Loop over last up to N_LOOKBACK events
+      
+
+    return this_track_burnin; 
+
+}
+
+
+int dmtpc::analysis::cleanskim::Functions::clusterFind(dmtpc::analysis::ClusterImage* clusti, const dmtpc::analysis::GainMap * gainmap, const dmtpc::analysis::cleanskim::Config * conf, const dmtpc::image::StitchInfo * stitch,
+                                    const double * image_rms, const double * blurred_image_rms,  const double * image_mean, const double * blurred_image_mean,  int indx, int u)
+{
+
+
+  static int nth = 0; 
+
+  const TH2 * clustimg = clusti->getImage(); 
+
+  int ntracks = 0;
+  const char * algo = conf->getStringList("cluster_find_algo",indx); 
+
+  std::vector<std::vector<int> > clusters; 
+  std::vector<std::vector<int> > reduced_clusters; 
+
+  dmtpc::analysis::clusterfinding::GMMergeParams p; 
+  p.min_dist = conf->getDouble("cluster_min_dist"); 
+  p.min_rxy_global = conf->getDouble("cluster_join_min_rxy_global"); 
+  p.min_rxy_cluster = conf->getDouble("cluster_join_min_rxy_cluster"); 
+  p.max_join_residual = conf->getDouble("cluster_join_max_join_residual"); 
+  p.least_squares_weight = conf->getDouble("cluster_join_least_squares_weight"); 
+  p.spacer_width = conf->getDouble("cluster_join_spacer_width"); 
+  p.map = gainmap; 
+
+
+
+  if (!strcasecmp(algo,"ci") || !strcasecmp(algo,"legacy"))
+  {
+    TH2F * baseimage = (TH2F*) clustimg->Clone("baseimage"); 
+
+    baseimage->Rebin2D(2,2); 
+    baseimage = (TH2F*) dmtpc::image::processing::topHatBlur(baseimage,1,conf->getDouble("blur_amount")); 
+
+    if (conf->getString("gain_map"))
+    {
+      ntracks= dmtpc::analysis::clusterfinding::findClustersGMLegacy(baseimage, 
+                                                &clusters, 
+                                                conf->getDouble("cluster_min_sigma"), 
+                                                conf->getDouble("cluster_max_sigma"), 
+                                                conf->getInt("cluster_min_size"),
+                                                &p
+                                                );
+
+    }
+    else 
+    {
+      ntracks=  dmtpc::analysis::clusterfinding::findClustersLegacy(baseimage, 
+                                                &clusters, 
+                                                conf->getDouble("cluster_min_sigma"), 
+                                                conf->getDouble("cluster_max_sigma"), 
+                                                conf->getInt("cluster_min_size"),
+                                                conf->getDouble("cluster_min_dist"));
+
+    }
+
+    // now we must delete baseimage
+    gROOT->Delete("baseimage"); 
+    gROOT->Delete("copy");  // ??? 
+
+  }
+
+  else
+  {
+    if (!strcasecmp(algo,"seed"))
+    {
+
+      if (!stitch)
+      {
+        ntracks = dmtpc::analysis::clusterfinding::findClustersGMSeed(clustimg, 
+                                                       &clusters, 
+                                                       conf->getDouble("cluster_find_seed_seed_threshold"), 
+                                                       conf->getDouble("cluster_find_seed_thresh_ring_ratio"), 
+                                                       1,
+                                                       conf->getDouble("cluster_find_seed_min_threshold"), 
+                                                       conf->getInt("cluster_find_seed_blur_radius"),
+                                                       conf->getDouble("gaussian_blur_amount"), 
+                                                       conf->getInt("cluster_neighbors_threshold_for_filling"),
+                                                       conf->getInt("cluster_min_neighbors_to_keep_pixel"), 
+                                                       conf->getInt("cluster_min_size_unbinned"),
+                                                       &p, 
+                                                       conf->getBool("seed_cluster_find_reproduce_v4_bug")
+                                                       ); 
+
+      }
+      else 
+      {
+#ifdef DEBUGOUT
+  char buf[64]; 
+  sprintf(buf,"debug/%d.root",nth); 
+#endif
+        
+        ntracks = dmtpc::analysis::clusterfinding::findClustersGMSeedStitch(clustimg, 
+                                                             &clusters, 
+                                                             &reduced_clusters, 
+                                                             stitch, 
+                                                             image_mean, 
+                                                             blurred_image_mean, 
+                                                             image_rms, 
+                                                             blurred_image_rms, 
+                                                             conf->getDouble("cluster_find_seed_seed_threshold"), 
+                                                             conf->getDouble("cluster_red_threshold"), 
+                                                             conf->getDouble("cluster_find_seed_thresh_ring_ratio"), 
+                                                             1.,
+                                                             conf->getDouble("cluster_find_seed_min_threshold"), 
+                                                             conf->getInt("cluster_find_seed_blur_radius"),
+                                                             conf->getDouble("gaussian_blur_amount"), 
+                                                             conf->getInt("cluster_neighbors_threshold_for_filling"),
+                                                             conf->getInt("cluster_min_neighbors_to_keep_pixel"), 
+                                                             conf->getInt("cluster_min_size_unbinned"),
+                                                             &p 
+ 
+#ifdef DEBUGOUT
+                                                             , buf, 
+#else
+                                                             , 0, 
+#endif                                                              
+                                                             conf->getBool("seed_cluster_find_reproduce_v4_bug") 
+                                                             ); 
+
+
+
+
+
+      }
+
+    }
+
+    else if (!strcasecmp(algo,"ad"))
+    {
+        ntracks = dmtpc::analysis::clusterfinding::findClustersADHysteresisGM(clustimg, 
+                                                               &clusters, 
+                                                               conf->getDouble("cluster_find_ad_k"), 
+                                                               conf->getDouble("cluster_find_ad_lambda"), 
+                                                               dmtpc::image::processing::TUKEY, 
+                                                               conf->getInt("cluster_find_ad_niter"), 
+                                                               conf->getDouble("cluster_find_ad_gradient_blur"),
+                                                               dmtpc::image::processing::SOBEL, 
+                                                               conf->getDouble("cluster_find_ad_high_thresh"),
+                                                               conf->getDouble("cluster_find_ad_low_thresh"),
+                                                               conf->getInt("cluster_neighbors_threshold_for_filling"),
+                                                               conf->getInt("cluster_min_size_unbinned"),
+                                                               &p
+                                                               );
+    }
+    else if (!strcasecmp(algo,"ring"))
+    {
+      char * debug = 0; 
+#ifdef DEBUGOUT
+      char buf[64]; 
+      debug = buf; 
+      sprintf(debug,"debug/ring%d.root",nth); 
+#endif
+      ntracks = dmtpc::analysis::clusterfinding::findClustersGMRing(clustimg, &clusters,
+                                                     &reduced_clusters, stitch, 
+                                                     image_rms,image_mean, 
+                                                     conf->getDouble("cluster_find_ring_space_sigma"), 
+                                                     conf->getDouble("cluster_find_ring_rms_sigma"), 
+                                                     conf->getDouble("cluster_find_ring_core_thresh_high"), 
+                                                     conf->getDouble("cluster_find_ring_core_thresh_low"), 
+                                                     conf->getDouble("cluster_find_ring_ring_thresh"), 
+                                                     conf->getDouble("cluster_find_ring_ring_nsigma"), 
+                                                     conf->getInt("cluster_min_size_unbinned"),
+                                                     dmtpc::image::processing::BILATERAL_GAUSSIAN,  
+                                                     conf->getInt("cluster_find_ring_ncleanup"), 
+                                                     &p, 
+                                                     debug, 12
+
+          ); 
+
+    }
+ 
+    else 
+    {
+       ntracks = 0; 
+       std::cout << "NO CLUSTER FINDING ALGORITHM!!!!" << std::endl; 
+
+    }
+
+
+  }
+
+  for (unsigned c = 0; c < clusters.size(); c++)
+  {
+    /* need to compute reduced cluster */ 
+    Cluster clust; 
+    clust.pixels = clusters[c]; 
+    clust.img = clustimg; 
+
+    if (!conf->getBool("stitch") && strcasecmp(algo,"ring"))
+    {
+      std::vector<int> reduced_cluster; 
+      double thresh = conf->getDouble("cluster_red_threshold") * image_rms[u]; 
+      for (unsigned j = 0; j < clusters[c].size(); j++)
+      {
+        if (clustimg->GetBinContent(clusters[c][j]) > thresh)
+        {
+          reduced_cluster.push_back(clusters[c][j]); 
+        }
+      }
+
+      clust.reduced_pixels = reduced_cluster; 
+
+    }
+    else
+    {
+      clust.reduced_pixels = reduced_clusters[c]; 
+    }
+    
+    clusti->addCluster(&clust); 
+  }
+
+  nth++; 
+  return ntracks; 
+}
+
+
+/** Reconstructed Track Parameters Go Here **/ 
+void dmtpc::analysis::cleanskim::Functions::fillTrackInfo(SkimEvent * tmp_event, int u, int v, const Cluster* clust, const Config * conf, const GainMap * gm, const Stitcher * stitch, const char * cam_id, const dmtpc::core::Event * orig_ev)
+{
+  
+  (void) cam_id; 
+  (void) orig_ev; 
+
+  //Energy
+  tmp_event->_E[u][v] = clusteralgo::getIntegral(clust); 
+  if (gm) tmp_event->_EGainMap[u][v] = clusteralgo::getIntegral(clust,gm); 
+
+  //Phi
+  switch(conf->getInt("phi_algorithm"))
+  {
+    case 1: tmp_event->_phi[u][v] = clusteralgo::getPhiFromLength(clust); break;
+    case 2: tmp_event->_phi[u][v] = clusteralgo::getPhiPCA(clust); break;
+    case 3: tmp_event->_phi[u][v] = clusteralgo::getPhiMaxSigma(clust); break; 
+    case 4: tmp_event->_phi[u][v] = clusteralgo::getPhiLineFit(clust); break;
+    default: tmp_event->_phi[u][v] = 0; 
+    cout << "Warning: invalid phi algorithm selected" << endl; 
+  }
+
+  //Skewness
+  tmp_event->_skewness[u][v] = clusteralgo::getSkewness(clust,tmp_event->_phi[u][v]); 
+
+  //Theta (not really)
+  tmp_event->_theta[u][v] = M_PI/2; 
+
+  //Range
+  switch(conf->getInt("range_algorithm"))
+  {                  
+      case 1: tmp_event->_range[u][v] = clusteralgo::getLength(clust); break;
+      case 2: tmp_event->_range[u][v] = clusteralgo::getLengthAlongAngle(clust,tmp_event->_phi[u][v],true); break;
+      default: tmp_event->_range[u][v] = 0;
+      cout << "Warning: invalid range algorithm selected" << endl; 
+  }
+
+  //Diffused Range
+	tmp_event->_diffusedRange[u][v]=clusteralgo::getLength(clust,0,0,0,0,false);
+
+  //Ellipse Axes
+  clusteralgo::getEllipseAxes(clust, &(tmp_event->_majoraxis[u][v]),&(tmp_event->_minoraxis[u][v]));
+		
+  //Position
+  clusteralgo::getXY(clust,&(tmp_event->_x[u][v]),&(tmp_event->_y[u][v]));
+
+  double r_offset = stitch ? 0 : 512; //TODO: unhardcode this
+
+  tmp_event->_r[u][v] = sqrt(pow(tmp_event->_x[u][v] - r_offset,2) + pow(tmp_event->_y[u][v] - r_offset,2)); 
+
+  //Cluster Mean
+  tmp_event->_cluster_mean[u][v] = clusteralgo::getMean(clust); 
+
+  
+  //Cluster RMS
+  tmp_event->_cluster_rms[u][v] = clusteralgo::getRMS(clust);
+
+  //Npixel (red) 
+  tmp_event->_npixel[u][v] = clust->pixels.size(); 
+  tmp_event->_npixel_red[u][v] = clust->reduced_pixels.size(); 
+
+  //Max Pixel
+  int maxBin; 
+  tmp_event->_maxpixel[u][v] = clusteralgo::getMax(clust,&maxBin);
+
+  //Neighbors
+  double minnsigma = conf->getDouble("cluster_min_sigma"); 
+  tmp_event->_neighbors[u][v] = clusteralgo::getNeighborsAboveThresh(clust,minnsigma * tmp_event->_image_rms[u],maxBin);
+
+  //nearest spacer, in widths of spacer, negative if doesn't exist 
+  tmp_event->_nearest_spacer_distance[u][v] = clusteralgo::nearestSpacerDistance(clust,gm,tmp_event->_nearest_spacer[u][v]); 
+
+
+  /*** TODO IMPLEMENT THESE **/ 
+
+
+  //Cygnus Angle, actually the reduced angle since theta estimate is not available 
+  tmp_event->_cygnus_angle[u][v] = 0;/*clusti->getCygnusAngle(v, conf->getNorthAngle(),
+                                              orientation,
+                                              conf->getLatitude(), conf->getLongitude(),
+                                              tmp_event->_phi[u][v],
+                                              tmp_event->_theta[u][v]+ TMath::Pi()/2. //TODO: when we figure out theta, remove this argument
+                                              );
+                                              */
+                                              
+
+  //Right Ascension, Declination, Galactic Coords
+ /* clusti->getRADec( tmp_event->_phi[u][v], tmp_event->_theta[u][v] + TMath::Pi()/2., //TODO: ditto as above
+                   orig_ev->timeStamp(), 
+                   conf->getLatitude(), conf->getLongitude(), 
+                   conf->getNorthAngle(), orientation, 
+                   tmp_event->_ra[u][v],tmp_event->_dec[u][v],tmp_event->_glat[u][v],tmp_event->_glon[u][v]); 
+   */
+
+
+  //Moments 
+  for (int m = 0; m <4; m++)
+  { 
+    tmp_event->_moments[u][m][v] = clusteralgo::moment(clust,m+1,tmp_event->_phi[u][v], 4,true); 
+    tmp_event->_transverse_moments[u][m][v] = clusteralgo::moment(clust,m+1,tmp_event->_phi[u][v]+TMath::Pi()/2., 4,true); 
+  }
+
+
+  //edge / veto //TODO
+  tmp_event->_edge[u][v] = clusteralgo::edge(clust); 
+//  tmp_event->_edge[u][v] = !stitch ? clusti->hitsEdge(v) :  clusti->hitsVeto(v, stitch->innerRadius(0), stitch->outerRadius(0));  
+
+  //Stitch only stuff //TODO
+  if (stitch)
+  {
+//    tmp_event->_inactive[u][v] = clusti->hitsInactive(v, stitch->outerRadius(0)); 
+//    tmp_event->_crossing[u][v] = clusti->crossesCameras(v, orig_ev->ccdData(0)->GetNbinsX() == 256 ? 
+//                                                           stitch->getStitchInfo256() : stitch->getStitchInfo1024()); 
+  }
+
+
+}
+
+void dmtpc::analysis::cleanskim::Functions::updateGlobalSparkRef(vector<pair<int,int> > **sparkref_running, list<vector<pair<int,int> > * > * sparkref, int ncamera)
+{
+
+   vector<pair<int,int> > * this_sparkref = new vector<pair<int,int> >[ncamera]; 
+   for (int u = 0; u < ncamera; u++)
+   {
+     for (unsigned int v = 0; v < (*sparkref_running)[u].size(); v++)
+     {
+       this_sparkref[u].push_back((*sparkref_running)[u][v]); 
+     }
+     
+     assert (this_sparkref[u].size()==(*sparkref_running)[u].size()); 
+   } 
+   sparkref->push_back(this_sparkref); 
+
+}
+
+void dmtpc::analysis::cleanskim::Functions::updateGlobalBurnin( list<vector<vector<pair<double,double> > > > * positions, list<vector<vector<vector<BurninEncoded_t> > > *> * burnin_temp, 
+                                            list<vector<vector<vector<BurninEncoded_t> > > *> * burnin, SkimEvent * tmp_event, const Config * conf, int ncamera, vector<vector<vector<BurninEncoded_t> > > * this_event_burnin) 
+{
+
+   //Add self to position list, removing first entry if list is already N_LOOKBACK
+    vector<vector<pair<double,double> > > these_positions (ncamera); 
+    for (int u = 0; u < ncamera; u++)
+    {
+      for (int v = 0; v < tmp_event->ntracks(u); v++)
+      {
+         pair<double,double> this_pos ( tmp_event->x(u,v), tmp_event->y(u,v)); 
+         these_positions[u].push_back(this_pos); 
+      }
+    } 
+
+    positions->push_back(these_positions); 
+
+    //Store the burnin_info in the buffer until we go past it enough times
+    burnin_temp->push_back(this_event_burnin); 
+    
+
+    //After we start filling the buffer, 
+    // it is time to clear the first entry
+    // and to write out the first event
+  
+   if (positions->size() > conf->getUInt("burnin_num_events"))
+   {
+
+     positions->pop_front(); 
+    
+     burnin->push_back(burnin_temp->front());
+     burnin_temp->pop_front(); 
+     
+    gROOT->cd(); 
+   }
+}
+
+
+
+
+
+

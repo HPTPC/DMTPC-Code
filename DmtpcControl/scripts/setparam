@@ -1,0 +1,99 @@
+#!/usr/bin/perl
+
+# example of how to run from web
+# http://rubin.lns.mit.edu/cgi-bin/sethv?type=mfc&value=0.
+
+#setdbvalue($type,$value)
+
+use DM;
+use CGI ':standard';
+use CGI::Carp qw(fatalsToBrowser);
+
+sub setdbvalue
+{
+    $db_handle = DM->connect
+	or die("Could not connect! \n");
+    
+    my $table = $_[0];
+    
+    #print $table;
+    
+    #$sql = "SELECT * FROM $table ORDER BY timestamp DESC LIMIT 1";
+    #$statement = $db_handle->prepare($sql) or die "Couldn't prepare query '$sql': $DBI::errstr\n";
+    #$statement->execute() or die "Couldn't execute query '$sql': $DBI::errstr\n";
+    #my $row_ref = $statement->fetchrow_hashref();
+    
+    $sql = "INSERT INTO $table (value, busy) values ( $_[1], 1 )";
+    $statement = $db_handle->prepare($sql) or die "Couldn't prepare query '$sql': $DBI::errstr\n";
+    $statement->execute() or die "Couldn't execute query '$sql': $DBI::errstr\n";
+    
+    print "Setting $table to $_[1] and turning busy flag ON\n";
+    
+    $db_handle->disconnect();
+}
+
+
+$|=1;
+
+print "Content-type:text/html\n\n";
+
+if (!param("type")) {
+    die "Unknown parameter type \n";
+}
+my $type = param("type");
+
+if (!defined(param("value"))) {
+    die "Unknown value \n";
+}
+
+my $value = param("value"); 
+
+#if ( $value>5500 && $type =~ m/caen/ ) {
+#    die "Voltage too large for the CAEN HV supply";
+#}
+
+#if ( $value<0 && $type =~ m/caen/ ) {
+#    die "Voltage can't be less than zero for the CAEN HV supply";
+#}
+
+if ( $value>100 && $type =~ m/pmt/ ) {
+    die "Voltage too large for the PMTs";
+}
+
+if ( $value<0 && $type =~ m/pmt/ ) {
+    die "Voltage can't be less than zero for the PMTs";
+}
+
+#if ( $value<0 && ($type =~ m/anode/ || $type =~ m/cathode/) ) {
+if ( $value<0 && ($type =~ m/caen/ ) ) {
+    die "Please enter a voltage greater than zero for the CAEN HV supply";
+}
+
+if ( $value>3000 && $type =~ m/brd1/ ) {
+  die "Voltage too large for the anode CAEN HV supply";
+}
+
+if ( $value>8000 && $type =~ m/brd0/ ) {
+  die "Voltage too large for the cathode CAEN HV supply";
+}
+
+#if ( $value>5 && $type eq "mfc") {
+#  die "Flow set point too large (can't be greater than 5V)";
+#}
+
+#if ( $value<0 && $type eq "mfc") {
+#  die "Flow set point too small (can't be less than 5V)";
+#}
+
+setdbvalue($type,$value);
+
+
+#if( $type eq "pressure" ){
+#    # set all the pressure variable set-values to 
+#    # this set value
+#    setdbvalue("pressure_cdg",$value);
+#    setdbvalue("pressure_bpg",$value);
+#    setdbvalue("pressure_convectron",$value);
+#} else {
+#    setdbvalue($type,$value);
+#}

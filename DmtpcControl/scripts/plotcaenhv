@@ -1,0 +1,131 @@
+#!/usr/bin/perl
+
+use DM;
+use GetTime;
+use CGI ':standard';
+use CGI::Carp qw(fatalsToBrowser);
+use Chart::Graph::Gnuplot qw(&gnuplot);
+
+$|=1;
+
+$Chart::Graph::Gnuplot::gnuplot  = "/usr/bin/gnuplot";
+$Chart::Graph::Gnuplot::ppmtogif = "/usr/bin/ppmtogif";
+
+
+print "Content-type:text/html\n\n";
+
+$db_handle = DM->connect
+    or die("Could not connect! \n");
+
+$tmpdir="$DM::APACHE_ROOT/$DM::HTMLDIR/tmp";
+$url="/tmp";
+
+my $maxTime = GetTime->getTime(0);
+my $minTime = GetTime->getTime(6);
+
+my @caenhv0data;
+my @caenhv0errdata;
+my @caenhv0set;
+my @caenhv0tsdata;
+$ncaenhv0data=0;
+$sql = "SELECT * FROM caen_n1471_hv0 WHERE timestamp>'$minTime' ORDER BY timestamp ASC";
+$statement = $db_handle->prepare($sql) or die "Couldn't prepare query '$sql': $DBI::errstr\n";
+$statement->execute() or die "Couldn't execute query '$sql': $DBI::errstr\n";
+while ($row_ref = $statement->fetchrow_hashref())
+{
+  push( @caenhv0tsdata,   $row_ref->{timestamp});
+  push( @caenhv0data,    $row_ref->{value});
+  push( @caenhv0set,     $row_ref->{setval});
+  push( @caenhv0errdata, $row_ref->{rms});
+  $ncaenhv0data++;
+}
+
+my @caenhv1data;
+my @caenhv1errdata;
+my @caenhv1set;
+my @caenhv1tsdata;
+$ncaenhv1data=0;
+$sql = "SELECT * FROM caen_n1471_hv1 WHERE timestamp<'$maxTime' && timestamp>'$minTime' ORDER BY timestamp";
+$statement = $db_handle->prepare($sql) or die "Couldn't prepare query '$sql': $DBI::errstr\n";
+$statement->execute() or die "Couldn't execute query '$sql': $DBI::errstr\n";
+while ($row_ref = $statement->fetchrow_hashref())
+{
+  push( @caenhv1tsdata,  $row_ref->{timestamp});
+  push( @caenhv1data,    $row_ref->{value});
+  push( @caenhv1set,     $row_ref->{setval});
+  push( @caenhv1errdata, $row_ref->{rms});
+  $ncaenhv1data++;
+}
+
+my @caenhv2data;
+my @caenhv2errdata;
+my @caenhv2set;
+my @caenhv2tsdata;
+$ncaenhv2data=0;
+$sql = "SELECT * FROM caen_n1471_hv2 WHERE timestamp<'$maxTime' && timestamp>'$minTime' ORDER BY timestamp";
+$statement = $db_handle->prepare($sql) or die "Couldn't prepare query '$sql': $DBI::errstr\n";
+$statement->execute() or die "Couldn't execute query '$sql': $DBI::errstr\n";
+while ($row_ref = $statement->fetchrow_hashref())
+{
+    push( @caenhv2tsdata,  $row_ref->{timestamp});
+    push( @caenhv2data,    $row_ref->{value});
+    push( @caenhv2set,     $row_ref->{setval});
+    push( @caenhv2errdata, $row_ref->{rms});
+    $ncaenhv2data++;
+}
+
+my @caenhv3data;
+my @caenhv3errdata;
+my @caenhv3set;
+my @caenhv3tsdata;
+$ncaenhv3data=0;
+$sql = "SELECT * FROM caen_n1471_hv3 WHERE timestamp<'$maxTime' && timestamp>'$minTime' ORDER BY timestamp";
+$statement = $db_handle->prepare($sql) or die "Couldn't prepare query '$sql': $DBI::errstr\n";
+$statement->execute() or die "Couldn't execute query '$sql': $DBI::errstr\n";
+while ($row_ref = $statement->fetchrow_hashref())
+{
+    push( @caenhv3tsdata,  $row_ref->{timestamp});
+    push( @caenhv3data,    $row_ref->{value});
+    push( @caenhv3set,     $row_ref->{setval});
+    push( @caenhv3errdata, $row_ref->{rms});
+    $ncaenhv3data++;
+}
+
+my $count0 = @caenhv0data;
+my $count1 = @caenhv1data;
+my $count2 = @caenhv1data;
+my $count3 = @caenhv1data;
+
+#print "maxTime=$maxTime\n";
+#print "minTime=$minTime\n";
+#print "count0=$count0\n";
+#print "count1=$count1\n";
+
+my $imagename ="caenhv_tmp";
+$imagename.=time(); 
+
+if ($count0 > 0 || $count1 > 0 || $count2 > 0 || $count3 > 0){
+
+    gnuplot({"title"=>"Chamber HV Chart", "output file"=>"$tmpdir/$imagename.gif", "output type"=>"gif",
+	     "x-axis label"=>"Time Stamp", "y-axis label"=>"HV Bias (V)",
+	     "xdata"=>"time", "timefmt"=>"%Y-%m-%d %H:%M:%S",
+	     "extra_opts"=>join("\n","set grid")  },
+	    [{"title"=>"CAEN N1471 CH0", "style"=>"yerrorbars", "type"=>"columns", "using"=>"1:3:4"}, \@caenhv0tsdata, \@caenhv0data, \@caenhv0errdata  ],
+	    [{"title"=>"CAEN N1471 CH0 set", "type"=>"columns", "style"=>"lines", "using"=>"1:3"}, \@caenhv0tsdata, \@caenhv0set  ],
+	    [{"title"=>"CAEN N1471 CH1", "style"=>"yerrorbars", "type"=>"columns", "using"=>"1:3:4"}, \@caenhv1tsdata, \@caenhv1data, \@caenhv1errdata  ],
+	    [{"title"=>"CAEN N1471 CH1 set", "type"=>"columns", "style"=>"lines", "using"=>"1:3"}, \@caenhv1tsdata, \@caenhv1set  ],
+	    [{"title"=>"CAEN N1471 CH2", "style"=>"yerrorbars", "type"=>"columns", "using"=>"1:3:4"}, \@caenhv2tsdata, \@caenhv2data, \@caenhv2errdata  ],
+            [{"title"=>"CAEN N1471 CH2 set", "type"=>"columns", "style"=>"lines", "using"=>"1:3"}, \@caenhv2tsdata, \@caenhv2set  ],
+	    [{"title"=>"CAEN N1471 CH3", "style"=>"yerrorbars", "type"=>"columns", "using"=>"1:3:4"}, \@caenhv3tsdata, \@caenhv3data, \@caenhv3errdata  ],
+            [{"title"=>"CAEN N1471 CH3 set", "type"=>"columns", "style"=>"lines", "using"=>"1:3"}, \@caenhv3tsdata, \@caenhv3set  ]
+	    );
+    
+    print "$url/$imagename.gif"; 
+    
+} else{
+    print "gfx/norecent.png";
+}
+
+
+$db_handle->disconnect();
+

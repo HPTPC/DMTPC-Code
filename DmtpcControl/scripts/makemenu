@@ -1,0 +1,21 @@
+#!/usr/bin/perl
+
+use DM;
+use CGI ':standard';
+use CGI::Carp qw(fatalsToBrowser);
+print "Content-type:text/html\n\n";
+
+
+print '  <br/>';
+print '  <ul class="tab">';
+print '    <li id="li_slow"><a href="index.html"><span>Slow</span></a></li>';
+print '    <li id="li_out"><a href="out.html"><span>Output</span></a></li>';
+print '    <li id="li_daq"><a href="daq.html"><span>DAQ</span></a></li>';
+print '    <li id="li_logbook"><a href="logbook'.$DM::DETECTOR.'.html"><span>Logbook</span></a></li>';
+print '    <li id="li_monitoring"><a href="monitoring.html"><span>Monitor </span></a></li>';
+print '    <li id="li_data"><a href="data.html"><span>Data</span></a></li>';
+print '    <li id="li_synop"><a href="synop.html"><span>SynOp</span></a></li>';
+print '    <li id="li_cam"><a href="404.html"><span>Cam</span></a></li>';
+print '    <li id="li_contact"><a href="contact.html"><span>Contact</span></a></li>';
+print '    <li id="li_help"><a href="help.html"><span>Help</span></a></li>';
+print '  </ul> ';

@@ -1,0 +1,18 @@
+To display peds from remote location
+
+root -l plPedQA.C'(1,"cam3_","m3_Michael_R1022003"," ~/calib/doneCalib/")'
+
+
+To diaplay clusters
+root -l ../plClustQA.C'(1,"cam3","m3_Michael_R1022006","./")'
+
+DAY28:
+hadd sum28.m3ana.root *1028*t *102900[1-4]*t
+
+root -l ./plClustQA.C'(5,"cam2","sum28","doneRuns/")'
+
+DAY 29
+hadd sum29.m3ana.root *102900[5-9]*t *10290[1-3]*t 
+
+Sort by track length
+sort -k 5 -n -t, m3_Michael_R1029030_cam3.clust_ana.csv

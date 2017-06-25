@@ -1,0 +1,21 @@
+#each run with 5 bias, 100 events, 2-s exposure, fresh gas, alternating between shutter auto and shutter closed, with charge readout enabled. All runs are voltage on, cathode at 2730 V, BL anode at 730 V. No AmBe
+m3_Michael_R1035019.raw.root
+m3_Michael_R1035020.raw.root
+m3_Michael_R1035021.raw.root
+m3_Michael_R1035022.raw.root
+m3_Michael_R1035023.raw.root
+m3_Michael_R1035024.raw.root
+m3_Michael_R1035025.raw.root
+m3_Michael_R1035026.raw.root
+m3_Michael_R1035027.raw.root
+m3_Michael_R1035030.raw.root
+m3_Michael_R1035031.raw.root
+m3_Michael_R1035034.raw.root
+#AmBe under BL
+m3_Michael_R1035036.raw.root
+m3_Michael_R1035037.raw.root
+m3_Michael_R1035043.raw.root
+m3_Michael_R1035044.raw.root
+m3_Michael_R1035045.raw.root
+m3_Michael_R1035046.raw.root
+#

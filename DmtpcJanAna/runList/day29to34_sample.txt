@@ -1,0 +1,26 @@
+# sample of runs when camera was never warmed up
+# runs of the same size, selected every ~8 hours
+# Jan 29
+m3_gain_R1029034.raw.root
+m3_gain_R1029052.raw.root
+# Jan 30
+m3_gain_R1030004.raw.root
+m3_gain_R1030012.raw.root
+m3_gain_R1030020.raw.root
+# Jan 31
+m3_gain_R1031003.raw.root
+m3_gain_R1031006.raw.root
+m3_gain_R1031014.raw.root
+# Feb 1
+m3_gain_R1032003.raw.root
+m3_gain_R1032036.raw.root
+m3_gain_R1032043.raw.root
+# Feb 2
+m3_gain_R1033003.raw.root
+m3_gain_R1033011.raw.root
+m3_gain_R1033019.raw.root
+# Feb 3
+m3_gain_R1034003.raw.root
+m3_gain_R1034011.raw.root
+m3_gain_R1034040.raw.root
+#

@@ -1,0 +1,146 @@
+<html> 
+  <head> 
+    <title>DMTPC - Canary Control </title> 
+    
+
+    <script type="text/javascript" src="jquery.js"></script>
+
+    <script>
+
+      var refId = setInterval(
+
+        function() 
+        {
+          $.getJSON("../cgi-bin/canary.py", 
+          {cmd: "getAll"},
+
+          function(data)
+          {
+            $.each(data, 
+              function(key,val)
+              {
+                $('#'+key).html(val);  
+              }) 
+             
+            
+          }
+          )
+        } 
+
+        ,1000); 
+    
+    
+    </script>
+
+
+  </head>
+  <body>
+  <img src="canary_control.png"> 
+
+  <div style="width: 1000px">
+  <div style="float:left; margin: 20">
+  <h2>Monitor</h2>
+  <table border=1 bgcolor="lightsteelblue">
+    <tr>
+      <td> Channel </td>
+      <td> On </td>
+      <td> Voltage </td>
+      <td> Current </td>
+    </tr>
+
+    <tr>
+      <td> CAEN CH0 </td>
+      <td id="caen_ch0_on"> ... </td>
+      <td id="caen_ch0_vmon"> ... </td>
+      <td id="caen_ch0_imon"> .. </td>
+    </tr>
+
+    <tr>
+      <td> CAEN CH1 </td>
+      <td id="caen_ch1_on"> ... </td>
+      <td id="caen_ch1_vmon"> ... </td>
+      <td id="caen_ch1_imon"> .. </td>
+    </tr>
+ 
+    <tr>
+      <td> CAEN CH2 </td>
+      <td id="caen_ch2_on"> ... </td>
+      <td id="caen_ch2_vmon"> ... </td>
+      <td id="caen_ch2_imon"> .. </td>
+    </tr>
+
+    <tr>
+      <td> CAEN CH3 </td>
+      <td id="caen_ch3_on"> ... </td>
+      <td id="caen_ch3_vmon"> ... </td>
+      <td id="caen_ch3_imon"> .. </td>
+    </tr>
+
+     <tr>
+      <td> DD HV </td>
+      <td id="dd_inhibit"> ... </td>
+      <td id=""> N/A </td>
+      <td id="dd_current_monitor"> .. </td>
+    </tr>
+ 
+  </table>
+
+  <table border=1 bgcolor="cyan"><tr><td>DD Temperature</td><td id="dd_temperature">..</td></tr></table>
+  
+  Updated at <div id="when"></div>
+
+
+</div>
+<div style="float: right; margin: 20">
+  <h2> Set </h2>
+
+  <table bgcolor="gray">
+
+    <tr> 
+      <td>CAEN CH0</td>
+      <td><input type="button" value="On" onClick='$.get("../cgi-bin/canary.py",{cmd: "setEnabled", value: 1, ch: 0})'></td>
+      <td><input type="button" value="Off" onClick='$.get("../cgi-bin/canary.py",{cmd: "setEnabled", value: 0, ch: 0})'></td>
+      <td><input type="input" value="0" id="ch0_val"> <input type="button" value="Set" onClick='$.get("../cgi-bin/canary.py",{cmd: "setHV", value: $("#ch0_val").val(), ch: 0})'></td>
+    </tr>
+
+    <tr> 
+      <td>CAEN CH1</td>
+      <td><input type="button" value="On" onClick='$.get("../cgi-bin/canary.py",{cmd: "setEnabled", value: 1, ch: 1})'></td>
+      <td><input type="button" value="Off" onClick='$.get("../cgi-bin/canary.py",{cmd: "setEnabled", value: 0, ch: 1})'></td>
+      <td><input type="input" value="0" id="ch1_val"> <input type="button" value="Set" onClick='$.get("../cgi-bin/canary.py",{cmd: "setHV", value: $("#ch1_val").val(), ch: 1})'></td>
+    </tr>
+
+    <tr> 
+      <td>CAEN CH2</td>
+      <td><input type="button" value="On" onClick='$.get("../cgi-bin/canary.py",{cmd: "setEnabled", value: 1, ch: 2})'></td>
+      <td><input type="button" value="Off" onClick='$.get("../cgi-bin/canary.py",{cmd: "setEnabled", value: 0, ch: 2})'></td>
+      <td><input type="input" value="0" id="ch2_val"> <input type="button" value="Set" onClick='$.get("../cgi-bin/canary.py",{cmd: "setHV", value: $("#ch2_val").val(), ch: 2})'></td>
+    </tr>
+    <tr> 
+      <td>CAEN CH3</td>
+      <td><input type="button" value="On" onClick='$.get("../cgi-bin/canary.py",{cmd: "setEnabled", value: 1, ch: 3})'></td>
+      <td><input type="button" value="Off" onClick='$.get("../cgi-bin/canary.py",{cmd: "setEnabled", value: 0, ch: 3})'></td>
+      <td><input type="input" value="0" id="ch3_val"> <input type="button" value="Set" onClick='$.get("../cgi-bin/canary.py",{cmd: "setHV", value: $("#ch3_val").val(), ch: 3})'></td>
+    </tr>
+
+  </table>
+
+  <table bgcolor="lightgray">
+
+    <tr> 
+      <td>DD Inhibit</td>
+      <td><input type="button" value="Inhibit On" onClick='$.get("../cgi-bin/canary.py",{cmd: "inhibit", value: 1, ch: 3})'></td>
+      <td><input type="button" value="Inhibit Off" onClick='$.get("../cgi-bin/canary.py",{cmd: "inhibit", value: 0, ch: 3})'></td>
+    </tr>
+
+
+
+  </table>
+
+</div>
+</div>
+
+
+</body> 
+</html>
+

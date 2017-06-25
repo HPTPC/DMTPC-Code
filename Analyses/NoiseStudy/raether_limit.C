@@ -1,0 +1,34 @@
+{
+
+  double pressure[11] = {1.0, 30.0, 50, 100, 200, 300, 400, 500, 600, 700, 800};
+ 
+  double voltage[11];
+  double a[0] = 11;
+  double b[0] = 513;
+  double d[0] = 6;
+  double pd[7] = { 6, 30, 60, 90, 120, 150, 180};
+  
+  TCanvas *c1 = new TCanvas("c1","c1",600,400);
+  TGraph *gr1 = new TGraph();
+
+  for(int i = 1; i < 11; i++){
+    voltage[i] =0.05* ((b[0] * pressure[i] * d[0])/(log(a[0]*pressure[i]*d[0]))); 
+
+    // pd[i] = pressure * d;
+  
+  gr1 = new TGraph(11,pressure,voltage);
+  gr1->SetLineColor(kRed);
+  gr1->SetLineWidth(4);
+  
+   }
+  
+  c1->cd(); 
+  gr1->Draw("ALP");
+  gr1->SetTitle(Form("Breakdown Voltage vs Pressure"));
+  gr1->GetXaxis()->SetTitle("Pressure(Torr)");                                                       gr1->GetYaxis()->SetTitle("Voltage(V)");                 
+  
+  
+  c1->Update();
+  
+  
+}

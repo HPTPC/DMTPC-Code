@@ -1,0 +1,80 @@
+#!/usr/bin/perl
+
+use DM;
+use GetTime;
+use CGI ':standard';
+use CGI::Carp qw(fatalsToBrowser);
+use Chart::Graph::Gnuplot qw(&gnuplot);
+
+
+$|=1;
+
+print "Content-type:text/html\n\n";
+$Chart::Graph::Gnuplot::gnuplot  = "/usr/bin/gnuplot";
+$Chart::Graph::Gnuplot::ppmtogif = "/usr/bin/ppmtogif";
+
+
+$db_handle = DM->connect
+    or die("Could not connect! \n");
+
+$tmpdir="$DM::APACHE_ROOT/$DM::HTMLDIR/tmp";
+$url="/tmp";
+my $AxisType = param("TYPE") or die "No parameter defined!";
+my $minTime = GetTime->getTime(6);
+#print "Current time: ".GetTime->getTime(0)."\n";
+#print "Min time: $minTime\n";
+$sql = "SELECT * FROM chamber_pressure_cdg WHERE timestamp>'$minTime' ORDER BY timestamp ASC";
+$statement = $db_handle->prepare($sql)
+    or die "Couldn't prepare query '$sql': $DBI::errstr\n";
+
+$statement->execute()
+    or die "Couldn't execute query '$sql': $DBI::errstr\n";
+
+my @pdata;
+my @perrdata;
+my @tsdata;
+
+$n=0;
+while ($row_ref = $statement->fetchrow_hashref())
+{
+  $n++;
+  push( @tsdata, $row_ref->{timestamp});
+  if ($AxisType eq "log") {
+    push( @pdata,  log($row_ref->{value})/log(10));
+  }
+  else {
+    push( @pdata,  $row_ref->{value});    
+  }
+  push( @perrdata, $row_ref->{value}/abs($row_ref->{value}));
+}
+my $count = @perrdata;
+
+if ($count>0){
+
+#$outFile = "pressure_tmp".time().".gif";
+    $outFile = "Chamber_pressure_cdg.gif";
+
+#my $ret = gnuplot({"title"=>"Chamber Pressure Chart", "output file"=>"$tmpdir/$outFile", "output type"=>"gif",
+
+my $ret = gnuplot({"title"=>"Chamber Pressure Chart", "output file"=>"$tmpdir/$outFile", "output type"=>"gif",
+	 "x-axis label"=>"Time Stamp", "y-axis label"=>"Chamber Pressure (torr)",
+	 "xdata"=>"time", "timefmt"=>"%Y-%m-%d %H:%M:%S",
+	 "extra_opts"=>join("\n","set grid")  },
+	 [{"title"=>"Chamber Pressure", "style"=>"linespoints", "type"=>"columns", "using"=>"1:3"},
+	 \@tsdata, \@pdata ]
+       );
+
+#if ($AxisType eq "log") {	
+#	print "Current pressure = @pdata[$n-1] log10(Torr)<br>";
+#}
+#else {
+#	print "Current pressure = @pdata[$n-1] Torr<br>";
+#    }
+print "$url/$outFile";
+
+}else{
+print "gfx/norecent.png";
+}
+
+$db_handle->disconnect();
+

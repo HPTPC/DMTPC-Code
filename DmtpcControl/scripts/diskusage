@@ -1,0 +1,9 @@
+#!/bin/sh
+
+#echo "Executing on $HOST"
+#echo "Start:" `date`
+
+dir=/data
+/usr/bin/python diskusage.py --format=html --threshold=1000000 --config=diskusage.cfg 
+#/usr/bin/python diskusage.py --format=html --threshold=1000000 --config=diskusage.cfg > /tmp/diskusage.html
+#echo "Finish:" `date`

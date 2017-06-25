@@ -1,0 +1,33 @@
+Error in <TFile::TFile>: file /scratch1/darkmatter/dmtpc/production/skimout/skim/m3/skim/2016/m3_gain_R1034045.rawskim.root does not exist
+
+ *** Break *** segmentation violation
+
+
+
+===========================================================
+There was a crash.
+This is the entire stack trace of all threads:
+===========================================================
+#0  0x000000315beac65e in waitpid () from /lib64/libc.so.6
+#1  0x000000315be3e609 in do_system () from /lib64/libc.so.6
+#2  0x0000003b0a86ab04 in TUnixSystem::StackTrace() () from /usr/lib64/root/libCore.so.5.34
+#3  0x0000003b0a869f23 in TUnixSystem::DispatchSignals(ESignals) () from /usr/lib64/root/libCore.so.5.34
+#4  <signal handler called>
+#5  0x00007feab3815116 in dmtpc::analysis::SkimDataset::createRootFile (this=0xd1e9b0, fname=0xd17e70 "/scratch1/darkmatter/dmtpc/production/skimout/skim/m3/skim/2016/m3_gain_R1034045.rawskim.root", foption=<incomplete type>) at src/SkimDataset.cc:322
+#6  0x00007feab38157ef in dmtpc::analysis::SkimDataset::openRootFile (this=0xd1e9b0, fname=0xd17e70 "/scratch1/darkmatter/dmtpc/production/skimout/skim/m3/skim/2016/m3_gain_R1034045.rawskim.root") at src/SkimDataset.cc:378
+#7  0x00000000004067ec in main (argc=3, argv=0x7ffce47ad368) at field_uniformity_skimmed_noclust1.cc:132
+===========================================================
+
+
+The lines below might hint at the cause of the crash.
+If they do not help you then please submit a bug report at
+http://root.cern.ch/bugs. Please post the ENTIRE stack trace
+from above as an attachment in addition to anything else
+that might help us fixing this issue.
+===========================================================
+#5  0x00007feab3815116 in dmtpc::analysis::SkimDataset::createRootFile (this=0xd1e9b0, fname=0xd17e70 "/scratch1/darkmatter/dmtpc/production/skimout/skim/m3/skim/2016/m3_gain_R1034045.rawskim.root", foption=<incomplete type>) at src/SkimDataset.cc:322
+#6  0x00007feab38157ef in dmtpc::analysis::SkimDataset::openRootFile (this=0xd1e9b0, fname=0xd17e70 "/scratch1/darkmatter/dmtpc/production/skimout/skim/m3/skim/2016/m3_gain_R1034045.rawskim.root") at src/SkimDataset.cc:378
+#7  0x00000000004067ec in main (argc=3, argv=0x7ffce47ad368) at field_uniformity_skimmed_noclust1.cc:132
+===========================================================
+
+

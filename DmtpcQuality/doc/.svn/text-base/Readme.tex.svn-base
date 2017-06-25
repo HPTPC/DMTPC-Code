@@ -1,0 +1,47 @@
+\documentclass[12pt]{article}
+\usepackage{hyperref}
+\title{Readme for Quality Framework}
+\author{\href{mailto:pwap022@live.rhul.ac.uk}{Richard Eggleston}}
+\date{March 8, 2016}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+I have developed a new framework for analysing the quality of a run, with the purpose of being extendable. Initially it has been made for checking whether a current draw was recorded in the control database during an event exposure, such that the event can be discarded for containing a spark. This is pertinent not only to remove the chance of constructing a low-light spark as an event but also to remove subsequent event images. This subsequent removal is necessary due to a drop in gain caused by the induced voltage drop across the amplification region and the recovery time of the power supply, which is typically of order 10s. 
+
+\section{Classes}
+There are 3 new classes: 
+
+\begin{enumerate}
+\item dmtpc::Quality::MySQL - This is used to read values from the slow control database (necessary due to the existing MySQL class only writing to the database)
+\item dmtpc::Quality::SQLite - This is an interface to the SQLite framework allowing to create, read and write SQLite files. 
+\item dmtpc::Quality::RunQuality - This takes a run number and associated SQLite file. It will report the quality of an event using defined functions. Currently only functions for the current draw/spark check are implemented, but expansion should be straightforward
+\end{enumerate}
+
+\section{Programs}
+There are 2 new programs:
+
+\begin{enumerate}
+\item extractDatabaseV2: 
+	\begin{enumerate}
+		\item Description: This is run to extract the necessary values from the MySQL database and store into a SQLite file. 
+		\item Setup: The output directory is currently hardcoded (line 51)
+		\item To run: bin/extractDatabaseV4 list-of-runs.txt year month database_name(optional)
+		\item Output: a file saved to /Calibration/2016/02/Quality/  with the name: FirstRunNum-LastRunNum.db, unless database_name provided.
+		\item Speed: About 2 events per second. A single run of 10 bias and 100 event images will take $\sim$1 min.
+	\end{enumerate}
+\item runCheckerV2:
+
+ 	\begin{enumerate}
+ 		\item Description: This is an example program using the RunQuality class to check the quality of a run. It consists of 80 lines of code so is easy to grasp, it is also commented. It asks if the exposure time was stored (true from 12/2/16 (run 1043031)). If yes, it will extract the exposure from the database, otherwise it will ask you to put the value in manually. It will automatically load the sqlite file, based on it being named as above. 
+ 		\item To run: bin/runCheckerV2 list-of-runs.txt year month
+		\item Output: Currently prints to screen the events that are tagged as sparks. To use the results of the check in some way, go to line 64 and make use of the loop over the sparkEvents vector, or line 74 and make use of the loop over the isSpark function. 
+		\item Speed: fast.
+	\end{enumerate}
+\end{enumerate}
+
+\noindent Note: Both programs assume all 4 channels are on, it is incumbent upon the user to make correct use of the results based on whether the channels were on or off.
+
+\end{document}

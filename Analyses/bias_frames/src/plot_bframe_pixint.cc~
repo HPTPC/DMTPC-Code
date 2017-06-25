@@ -1,0 +1,83 @@
+#include <Dataset.hh>
+#include <Image.hh>
+
+
+#include <vector>
+#include <iostream>
+#include <cstdlib>
+
+#include <TFile.h>
+#include <TH2.h>
+#include <TTree.h>
+#include <TCanvas.h>
+
+#include <TString.h>
+
+using namespace std;
+
+TH1D * pixhist(TH2 *img){
+
+  int xmin = img->GetXaxis()->GetFirst();
+  int xmax = img->GetXaxis()->GetLast();
+  int ymin = img->GetYaxis()->GetFirst();
+  int ymax = img->GetYaxis()->GetLast();
+
+  vector<double> vals;
+  double min = 1e99;
+  double max = -1e99;
+
+  for(int x = xmin; x <= xmax; x++){
+    for(int y = ymin; y <= ymax; y++){
+      double val = img->GetBinContent(x,y);
+      if(val < min) min = val; 
+      if(val > max) max = val;
+      vals.push_back(val);
+    }
+  }
+
+  int nbins = int(max-min+0.5);
+
+  TH1D * hist = new TH1D("pixhist","pixhist",nbins,min,max);
+  
+  for(int i = 0; i < vals.size(); i++){
+    hist->Fill(vals.at(i));
+  }
+
+  return hist;
+}
+
+int main(int argc, char ** argv){
+
+  dmtpc::core::Dataset * d = new dmtpc::core::Dataset;
+  TString runnum = argv[1];
+  d->open(Form("/scratch1/darkmatter/dmtpc/data/m3/dmtpc_m3_%05d.root",atoi(argv[1])));
+  int ncam = 4;
+
+  //  int cam = atoi(argv[2]);
+  //  int frame = atoi(argv[3]);
+
+  std::vector<dmtpc::core::Image*> * biasPtr = 0;
+
+  TTree * btree = d->getBiasTree();
+  btree->SetBranchAddress("biasFrames",&biasPtr);
+
+  TFile save(Form("output/bframe_pixint_%d.root",runnum.Atoi()), "recreate");
+
+  std::cout<<"btree entries: "<<btree->GetEntries()<<std::endl;
+  
+  for(int i = 0; i < btree->GetEntries(); i++){
+    btree->GetEntry(i);
+
+    std::cout<<"biasPtr size: "<<biasPtr->size()<<std::endl;
+
+    for(int j = 0; j < biasPtr->size(); j++){
+      std::cout<<"hist type: "<<biasPtr->at(j)<<std::endl;
+      TH2I * hist = const_cast<TH2I*>((TH2I*)biasPtr->at(j)->getHist()->Clone("hist"));
+      hist->SetNameTitle(Form("bframe_%d_%d",j,i),Form("Bias Frame %d, Cam %d",i,j));
+      TH1D * ph = pixhist(hist);
+      ph->SetNameTitle(Form("ph_%d_%d",j,i),Form("Pixel Intensities Frame %d, Cam %d",i,j));
+    }
+  }
+  save.Write();
+  save.Close();
+}

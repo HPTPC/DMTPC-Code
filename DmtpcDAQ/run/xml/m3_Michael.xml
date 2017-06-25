@@ -1,0 +1,107 @@
+<DMTPC_M3_Config   verbose = '1' >
+  This is Michael's test run config
+  <ccd_buffer_size   type='int' unit='no. of frames' > 30 </ccd_buffer_size > 
+  <scope_buffer_size type='int'  unit='no. of traces per exposure'> 10000 </scope_buffer_size > 
+  <ccd_threaded_readout     type='bool'>  false   </ccd_threaded_readout>
+  <ccd_external_trigger     type='bool'>  false   </ccd_external_trigger>
+  <ccd_shutter_always_open  type='bool'>  false   </ccd_shutter_always_open>
+  <ccd_dark_shutter_open    type='bool'>  false   </ccd_dark_shutter_open>
+    
+  <CCD_Camera  type='SICam'  enabled='false'>
+     <xbin type='int'> 4 </xbin>
+     <ybin type='int'> 4 </ybin>
+     <exposure_time type='int'    unit='ms'  > 2000 </exposure_time>
+     <nflushes  type='int'  > 1  </nflushes>
+     <set_temp     type='int'    unit='Cdeg'> 20  </set_temp>
+  </CCD_Camera>
+    
+  <CCD_Camera  type='Fake'  enabled='false' >
+    <n_fake_cameras> 1 </n_fake_cameras>
+    <xbin type='int'> 4 </xbin>
+    <ybin type='int'> 4 </ybin>
+    <exposure_time type='int'    unit='ms'  > 2000 </exposure_time>
+    <set_temp     type='int'    unit='Cdeg'> 20  </set_temp>
+  </CCD_Camera>
+
+   <CCD_Camera  type='FLIProline'  enabled='true' >
+     <xbin type='int'> 4 </xbin>
+     <ybin type='int'> 4 </ybin>
+     <exposure_time type='int'    unit='ms'  > 2000 </exposure_time>
+     <nflushes  type='int'  > 1  </nflushes>
+     <set_temp     type='int'    unit='Cdeg'> -30  </set_temp>
+   </CCD_Camera>
+
+   <CAEN_Board id='0'  enabled='false' >    
+     <record_length  type='int' units='us'              >   40   </record_length>
+     <post_trigger   type='int' units='percent'         >  80    </post_trigger>
+     <num_events_BLT type='int'               >  5        </num_events_BLT>
+     <connection_type  type='string'          >  pcielink </connection_type>
+     <link_num   type='int'                   >  0        </link_num>
+     <conet_node type='int'                   >  0        </conet_node>
+     
+     <channel  id='0' enabled='false' >
+        other values are not provided - fix it before enabling this channel
+        <dc_offset type='int'  units='mV' > [scope_0_ch_0_dc_offset]    </dc_offset>	
+     </channel>
+     
+    <channel  id='1' enabled='false' >
+        other values are not provided - fix it before enabling this channel
+        <dc_offset type='int'  units='mV' > [scope_0_ch_1_dc_offset]    </dc_offset>	
+     </channel>
+     
+     <channel  id='2' enabled='false' >
+        other values are not provided - fix it before enabling this channel
+        <dc_offset type='int'  units='mV' > [scope_0_ch_2_dc_offset]    </dc_offset>	
+     </channel>
+     
+     <channel  id='3' enabled='false' >
+        other values are not provided - fix it before enabling this channel
+        <dc_offset type='int'  units='mV' > [scope_0_ch_3_dc_offset]    </dc_offset>	
+     </channel>
+     
+     <channel  id='4' type='CSP' enabled='true' >
+            <vmin       type='int'      unit='mV'>      -100      </vmin>
+       <vmax       type='int'      unit='mV'>      1900      </vmax>
+       <dc_offset type='int'  units='mV' > 60    </dc_offset>
+       <trigger_threshold  type='int'  units='mV' > 10    </trigger_threshold>
+       <pulse_polarity_falling   type='bool'>      false  </pulse_polarity_falling>
+       <trigger_polarity_falling  type='bool'>     false  </trigger_polarity_falling>
+     </channel>
+     
+     <channel  id='5' enabled='false' >
+        other values are not provided - fix it before enabling this channel
+        <dc_offset type='int'  units='mV' > [scope_0_ch_5_dc_offset]    </dc_offset>	
+     </channel>
+     
+     <channel  id='6' type='CSP' enabled='true'  >
+       <vmin       type='int'      unit='mV'>      -100      </vmin>
+       <vmax       type='int'      unit='mV'>      1900      </vmax>      
+       <dc_offset type='int'  units='mV' > 60    </dc_offset>
+       <trigger_threshold  type='int'  units='mV' > 10    </trigger_threshold>
+       <pulse_polarity_falling   type='bool'>      false  </pulse_polarity_falling>
+       <trigger_polarity_falling  type='bool'>     false  </trigger_polarity_falling>
+     </channel>
+
+     <channel  id='7' enabled='false' >
+        other values are not provided - fix it before enabling this channel
+        <dc_offset type='int'  units='mV' > [scope_0_ch_7_dc_offset]    </dc_offset>	
+     </channel>
+     
+
+
+   </CAEN_Board>
+   
+   <CAEN_Board id='1'  enabled='false' />    
+
+
+  Naming convention for DMPTP-M3 XML-based run configuration parameters 
+  - XML Block_Names :  consist of capitalized words joined by '_'
+  - blocks may have 'enabled' attribute
+  - blocks do not have meaningfull 'value', it allows to place comments 
+  - 'verbos' type is int, verbosity leve grows with the value of 'verbose'  
+  - XML variables: only small case letters, phrases joined by '_', e.g. record_length
+  - attributes: defined as one word or twoWords
+  - variables may have 'unit' attribute , no convention for units so far
+  - variables must have 'type' attribute restricted to: 'int', 'float', 'bool', 'string'
+
+</DMTPC_M3_Config>

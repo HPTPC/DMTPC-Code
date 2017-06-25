@@ -1,0 +1,207 @@
+<html>
+
+<head> 
+  <title>DMTPC Environmental Monitoring</title>
+<script type="text/javascript" src="jquery.min.js"></script>
+<script type="text/javascript" src="jquery.flot.min.js"></script>
+<script type="text/javascript" src="dmtpc_graph.js"></script>
+
+<style type="text/css">
+
+  div#popup
+  {
+    position: absolute; 
+    width: 800;
+    height:660;
+    background-color:white;
+    z-index:9002;
+  }
+
+  div#blanket
+  {
+    position:absolute;
+    background-color:#222;
+    z-index:9000;
+    top:0px;
+    left:0px;
+    width:100%;
+    opacity: 0.8;
+    filter:alpha(opacity=80);
+  }
+
+</style>
+<script language="javascript">
+
+var graphs = []; 
+var custom_graph; 
+
+function start()
+{
+  $("#start_btn").hide(); 
+  $("#stop_btn").show(); 
+
+  for (var i = 0; i < graphs.length; i++)
+  {
+    graphs[i].loadData(); 
+    graphs[i].start(20000); 
+  }
+
+}
+
+function once()
+{
+  for (var i = 0; i < graphs.length; i++)
+  {
+    graphs[i].loadData(); 
+  }
+}
+
+function hide_popup()
+{
+
+  $('#custom_graph').html("Loading.."); 
+  $('#popup').css("display","none"); 
+  $('#blanket').css("display","none"); 
+}
+
+function draw()
+{
+  $("#popup").css("display","block"); 
+  $("#blanket").css("display","block"); 
+  $('#blanket').css("height",$(document).height()+"px"); 
+  $('#popup').center(); 
+  
+  var tables = $("#names").val().split(","); 
+
+  custom_graph = new DmtpcGraph("custom_graph",{table_names: tables}); 
+  //custom_graph.setMinValue($("#min").val());  
+  //custom_graph.setMaxValue($("#max").val());  
+  custom_graph.setStartTime($("#startyr").val(), 
+                            $("#startmo").val(),
+                            $("#startdy").val(),
+                            $("#starthr").val(),
+                            $("#startmin").val(),
+                            $("#startsec").val()); 
+
+  custom_graph.setEndTime(  $("#endyr").val(), 
+                            $("#endmo").val(),
+                            $("#enddy").val(),
+                            $("#endhr").val(),
+                            $("#endmin").val(),
+                            $("#endsec").val()); 
+  custom_graph.setNEvery( $("#nevery").val()); 
+  custom_graph.loadData(); 
+
+}
+
+function stop()
+{
+  for (var i = 0; i < graphs.length; i++)
+  {
+    graphs[i].stop(); 
+  }
+  $("#stop_btn").hide(); 
+  $("#start_btn").show(); 
+}
+
+
+$(function()
+{
+  $("#stop_btn").hide(); 
+
+  d = new Date(); 
+ 
+  $("#endyr").val(d.getUTCFullYear()); 
+  $("#endmo").val(d.getUTCMonth()+1); 
+  $("#enddy").val(d.getUTCDate()); 
+  $("#endhr").val(d.getUTCHours()); 
+  $("#endmin").val(d.getUTCMinutes()); 
+  $("#endsec").val(d.getUTCSeconds()); 
+ 
+  d.setTime(d.valueOf()-5000*60*60); 
+
+  $("#startyr").val(d.getUTCFullYear()); 
+  $("#startmo").val(d.getUTCMonth()+1); 
+  $("#startdy").val(d.getUTCDate()); 
+  $("#starthr").val(d.getUTCHours()); 
+  $("#startmin").val(d.getUTCMinutes()); 
+  $("#startsec").val(d.getUTCSeconds()); 
+
+  graphs[0] = new DmtpcGraph("VOLTAGE",{table_names: ['mesh_hv', 'wire_hv']}); 
+  graphs[1] = new DmtpcGraph("CURRENT",{table_names: ['mesh_i','wire_i']});
+  graphs[2] = new DmtpcGraph("TEMP",{table_names: ['temp0', 'temp1','temp2'], max: 50});
+  graphs[3] = new DmtpcGraph("PRESS",{table_names: ['pressure_bpg', 'pressure_cdg','pressure_convectron']});
+  graphs[4] = new DmtpcGraph("PMT_HV",{table_names: ['pmt0_hv','pmt1_hv','pmt2_hv']});
+  graphs[5] = new DmtpcGraph("PMT_I",{table_names: ['pmt0_i', 'pmt1_i','pmt2_i']});
+
+  once(); 
+
+  jQuery.fn.center = function () {
+    this.css("position","absolute");
+    this.css("top", ( $(window).height() - this.height() ) / 2+$(window).scrollTop() + "px");
+    this.css("left", ( $(window).width() - this.width() ) / 2+$(window).scrollLeft() + "px");
+    return this;
+  }
+
+
+}); 
+
+</script>
+
+
+
+</head>
+
+<body><h1>
+DMTPC 4-shooter Monitoring</h1>
+
+ 
+
+<form>
+<table bgcolor="#aaaaff">
+  <tr>
+  <td><b>Control: </b></td>
+  <td>
+    <input type="button" value="Update" onClick = "once()">
+  </td>
+  <td>
+    <input type="button" id="start_btn" value="Start Autoupdate" onClick="start()"> 
+    <input type="button" id="stop_btn"  value="Stop Autoupdate" onClick="stop()"> 
+  </td></tr><table>
+
+  <br>
+    <table bgcolor="#cccccc">
+      <tr><td><b>Custom Plot: </b></td><td></td><td></td></tr>
+      <tr><td>Tables: </td><td><input size="50" id='names' value="mesh_i,wire_i"></td></tr>
+      <tr><td>Start (UTC):  </td><td><input size="2" id="startmo">/<input size="2" id="startdy">/<input size="4" id='startyr'> <input size="2" id="starthr">:<input size="2" id="startmin">:<input size="2" id="startsec"></td></tr>
+      <tr><td>End (UTC):  </td><td><input size="2" id="endmo">/<input size="2" id="enddy">/<input size="4" id='endyr'> <input size="2" id="endhr">:<input size="2" id="endmin">:<input size="2" id="endsec"></td></tr>
+      <!--<tr><td>Range:</td><td><input size="4" id="min">-<input size="4" id="max"> </td></tr>-->
+      <tr><td>Wavelength:</td><td><input size="4" id="nevery" value="1"></tr>
+      <tr><td><input type="button" value="Draw!" onClick="draw()"></td><td></td><td></td></tr>
+    </table>
+</form>
+
+<div id="blanket" style="display:none"></div>
+<div id="popup" style="display:none">
+   
+  <div id="custom_graph" style="width:800px;height:600px"></div>
+  <br>
+  <p align="center"><a href="#" onClick="hide_popup()">[close]</a></p>
+
+</div>
+
+<!-- here are the div placeholders --> 
+    <h3>Temperature Sensors (Celsius): </h3>
+    <div id="TEMP" style="width: 600px; height:300px"></div>
+    <h3>Pressure Sensors (Torr): </h3>
+    <div id="PRESS" style="width: 600px; height:300px"></div>
+    <h3>Voltage (kV): </h3>
+    <div id="VOLTAGE" style="width: 600px; height:300px"></div>
+    <h3>Current (mA): </h3>
+    <div id="CURRENT" style="width: 600px; height:300px"></div>
+    <h3>PMT Voltage (-kV): </h3>
+    <div id="PMT_HV" style="width: 600px; height:300px"></div>
+    <h3>PMT Current (?A): </h3>
+    <div id="PMT_I" style="width: 600px; height:300px"></div>
+    
+</body></html>

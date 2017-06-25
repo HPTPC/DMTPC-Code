@@ -1,0 +1,17 @@
+The dmtpcDBdaemon script should be copied into
+/etc/init.d/
+
+If it is not yet added to chkconfig, then run (as root)
+
+chkconfig --add dmtpcDBdaemon
+chkconfig --level 2345 dmtpcDBdaemon on
+
+Remember you might need to 'chmod +x dmtpcDBdaemon' if you just 
+checked it out from svn
+
+Then you can run
+
+service dmtpcDBdaemon start|stop|restart|status
+
+as a normal chkconfig script
+

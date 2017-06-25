@@ -1,0 +1,34 @@
+#!/usr/bin/perl
+
+#use "/var/www/cgi-bin/DM";
+use warnings;
+use DM;
+use GetTime;
+
+#use CGI ':standard';                                                                                                   
+#use CGI::Carp qw(fatalsToBrowser);    
+
+print "Content-type:text/html\n\n";
+
+@ARGV = ("ps -A | grep sparkMonitor |");
+$count=0;
+while (<>) {
+    $line = $_;
+    $count++;
+    #print $line; 
+    @numbers = $line =~ m/(\d+)/g;
+        $killCommand = "kill -9 $numbers[0]";
+    #print "$killCommand \n"; 
+        system($killCommand);
+}
+
+if ($count==0) {
+    #system("nohup $DM::APACHE_ROOT/cgi-bin/sparkMonitor > $DM::APACHE_ROOT/$DM::HTMLDIR/tmp/sparkMonitor.out 2>&1 &");
+    #system("nohup $DM::APACHE_ROOT/cgi-bin/sparkMonitor > $DM::APACHE_ROOT/$DM::HTMLDIR/tmp/sparkMonitor.out &");
+    system("nohup $DM::APACHE_ROOT/cgi-bin/sparkMonitor > /dev/null &");
+}
+
+#print <<EOF;
+#<META HTTP-EQUIV="Refresh"  CONTENT="0;
+#URL=http://18.146.0.111">
+#EOF

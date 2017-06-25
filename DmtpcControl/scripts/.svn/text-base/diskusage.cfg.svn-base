@@ -1,0 +1,14 @@
+[rubin]
+name: rubin.lns.mit.edu
+volumes: /data 
+paths: /data/
+
+[rubinbak]
+name: rubin_external
+volumes: /media/4shbak
+paths: /media/4shbak/
+
+[m3slow]
+name: m3slow.lns.mit.edu
+volumes: /data 
+paths: /data/

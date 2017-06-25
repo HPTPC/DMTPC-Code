@@ -1,0 +1,100 @@
+# data location: /data/AlphaData
+# most data taken with 4x4 binning, noOS, cam3 worth looking, 300 frames
+dmtpc_m3_alpha_00184.root
+dmtpc_m3_alpha_00185.root
+dmtpc_m3_alpha_00198.root
+dmtpc_m3_alpha_00199.root
+dmtpc_m3_alpha_00200.root
+dmtpc_m3_alpha_00201.root
+dmtpc_m3_alpha_00542.root  3x3 bining w/ OS, only 20 frames
+# BL quadrant was at 750 V and camera data taken with 3x3 binning, 100 frames
+dmtpc_m3_alpha_00610.root 
+dmtpc_m3_alpha_00611.root
+dmtpc_m3_alpha_00612.root
+dmtpc_m3_alpha_00613.root
+dmtpc_m3_alpha_00614.root
+dmtpc_m3_alpha_00615.root
+dmtpc_m3_alpha_00616.root
+dmtpc_m3_alpha_00617.root
+dmtpc_m3_alpha_00618.root
+dmtpc_m3_alpha_00619.root
+dmtpc_m3_alpha_00620.root
+dmtpc_m3_alpha_00621.root
+dmtpc_m3_alpha_00622.root
+dmtpc_m3_alpha_00623.root
+dmtpc_m3_alpha_00624.root
+dmtpc_m3_alpha_00625.root
+dmtpc_m3_alpha_00627.root
+dmtpc_m3_alpha_00628.root
+dmtpc_m3_alpha_00629.root
+dmtpc_m3_alpha_00630.root
+dmtpc_m3_alpha_00631.root
+dmtpc_m3_alpha_00632.root
+dmtpc_m3_alpha_00633.root
+dmtpc_m3_alpha_00634.root
+dmtpc_m3_alpha_00635.root
+dmtpc_m3_alpha_00636.root
+#
+# data location: /data/AlphaData
+# .......reb = 3x3
+#----------- 640-649, BL @ 750 V
+dmtpc_m3_alpha_00640.root
+dmtpc_m3_alpha_00641.root
+dmtpc_m3_alpha_00642.root
+dmtpc_m3_alpha_00643.root
+dmtpc_m3_alpha_00644.root
+dmtpc_m3_alpha_00645.root
+dmtpc_m3_alpha_00646.root
+dmtpc_m3_alpha_00647.root
+dmtpc_m3_alpha_00648.root
+dmtpc_m3_alpha_00649.root
+#-------   650-659, BL @ 740 V
+dmtpc_m3_alpha_00650.root
+dmtpc_m3_alpha_00651.root
+dmtpc_m3_alpha_00652.root
+dmtpc_m3_alpha_00653.root
+dmtpc_m3_alpha_00654.root
+dmtpc_m3_alpha_00655.root
+dmtpc_m3_alpha_00656.root
+dmtpc_m3_alpha_00657.root
+dmtpc_m3_alpha_00658.root
+dmtpc_m3_alpha_00659.root
+#-----   660-669, BL @ 730 V
+dmtpc_m3_alpha_00660.root
+dmtpc_m3_alpha_00661.root
+dmtpc_m3_alpha_00662.root
+dmtpc_m3_alpha_00663.root
+dmtpc_m3_alpha_00664.root
+dmtpc_m3_alpha_00665.root
+dmtpc_m3_alpha_00666.root
+dmtpc_m3_alpha_00667.root
+dmtpc_m3_alpha_00668.root
+dmtpc_m3_alpha_00669.root
+#------   670-679, BL @ 720 V
+dmtpc_m3_alpha_00670.root
+dmtpc_m3_alpha_00671.root
+dmtpc_m3_alpha_00672.root
+dmtpc_m3_alpha_00673.root
+dmtpc_m3_alpha_00674.root
+dmtpc_m3_alpha_00675.root
+dmtpc_m3_alpha_00676.root
+dmtpc_m3_alpha_00677.root
+dmtpc_m3_alpha_00678.root
+dmtpc_m3_alpha_00679.root  100 frames
+#------   723-729, BL @ 740 V
+dmtpc_m3_alpha_00723.root
+dmtpc_m3_alpha_00724.root
+dmtpc_m3_alpha_00725.root
+dmtpc_m3_alpha_00726.root
+dmtpc_m3_alpha_00727.root
+dmtpc_m3_alpha_00728.root
+dmtpc_m3_alpha_00729.root
+#--------  731-736, BL @ 740 V 
+dmtpc_m3_alpha_00731.root
+# ...............  reb=2x2
+dmtpc_m3_alpha_00732.root  
+dmtpc_m3_alpha_00733.root
+dmtpc_m3_alpha_00734.root  quad2 cam missing
+dmtpc_m3_alpha_00735.root  quad2 cam missing
+dmtpc_m3_alpha_00736.root
+#

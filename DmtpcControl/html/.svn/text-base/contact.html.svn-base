@@ -1,0 +1,73 @@
+
+<html>
+	<head>
+	<title> DMTPC - Mission Control </title>
+
+	<script type="text/javascript" src="jquery.min.js"></script>
+  <script type="text/javascript" src="jquery.form.min.js"></script>
+	<script>
+	
+	$(document).ready(function()
+	{
+	  var refId = setInterval(function()
+    {
+      $('#slowControl').load('../cgi-bin/testing/printpars_test.pl');
+    },1000); 
+
+    $('#setter').ajaxForm(function() {
+    });
+
+    $('#detname').load('../cgi-bin/getdet'); 
+    $('#menu').load('../cgi-bin/makemenu',function(){$('#li_contact').addClass('active');}); 
+
+   }); 
+
+
+	
+	</script>
+
+  <link rel="stylesheet" href="styles.css" type="text/css"/>
+
+	</head>
+
+  <body>
+ <div id="all">
+  <img src="gfx/webpageheader.png" alt="DMTPC - Mission Control" />
+  <div id="detname">
+   </div>
+  <div id="menu">
+  </div>
+
+  <div id="main">
+
+<h1><b>Useful 1m3 contact information</b></h1>
+
+<p>
+<b><i>24-037</i></b><br>
+617.253.6710<br/>
+
+<p>
+<b><i>Michael Leyton</i></b><br>
+<a href="mailto:leyton@mit.edu">leyton@mit.edu</a><br>
+617.774.7596 (cell)<br/>
+617.324.1831 (office)<br/>
+plohound9 (skype)
+
+<p>
+<b><i>Cosmin Deaconu</i></b><br>
+<a href="mailto:cozzyd@mit.edu">cozzyd@mit.edu</a><br>
+775.846.9105 (cell)<br/>
+617.253.1593 (work)<br/>
+tehvillageidiot (aim/skype) <br/>
+
+  </div>
+<hr>
+LAST hour load history  (more plots are avaliable directly form <a href="http://montest.lns.mit.edu/ganglia/" >Ganglia </a> ) <br>
+<img src="http://montest.lns.mit.edu/ganglia/graph.php?r=hour&z=xlarge&h=m3slow.lns.mit.edu&m=load_one&s=by+name&mc=2&g=load_report&c=nestA" >
+
+<img src="http://montest.lns.mit.edu/ganglia/graph.php?r=hour&z=xlarge&h=m3daq.lns.mit.edu&m=load_one&s=by+name&mc=2&g=load_report&c=nestA">
+
+
+</div>
+</body></html>
+

@@ -1,0 +1,66 @@
+\documentclass{article} 
+\title{DMTPC C++ Coding Guidelines} 
+\begin{document} 
+\maketitle
+
+\section{Introduction} 
+Until now, the DMTPC collaboration has had no formal coding conventions, which has at times resulted in chaotic code. This document seeks to fill that void by creating a set of conventions. As we work on restructuring our codebase, please try to keep this document in mind. 
+
+
+\section{File structure} 
+
+\subsection{Header files} 
+Our header files end with \texttt{.hh}. They should go in a separate include directory for most packages (except perhaps the most simple ones) to avoid clutter. Each header file should have a \texttt{\#define} guard to prevent inclusion multiple times. 
+
+\subsection{Source files} 
+Generally source files should go in a separate src directory to avoid clutter. 
+
+
+\section{Naming} 
+
+\subsection{Namespaces} 
+Namespaces are lowercase. All code is to be in the \texttt{dmtpc::} namespace and and the subspace related to the directory structure (e.g. things in the DmtpcImage directory will be in the \texttt{dmtpc::image::} namespace.) 
+\subsection{Classes}
+Class names should be in camel case starting with a capital letter. For example \texttt{DmtpcSkimDataset}. 
+\subsection{Variables} 
+Instance variables may have any convention that is convenient for the class in question. In some cases, a leading underscore may be useful for more complicated classes.  
+No conventions are imposed on local variables, but it is useful to use descriptive names. 
+\subsection{Functions and Methods} 
+Functions and methods should be in camel case starting with a lowercase letter. For example \texttt{toPolarCoordinates}. 
+Parameters to functions and methods should be in all lower case with underscores if needed for clarity. 
+\subsection{Enums} 
+Enum names and values should be in all caps. Underscores may be used to separate words. 
+\subsection{Macros} 
+Macros should be in all caps. Underscores may be used to separate words. 
+\subsection{Constants} 
+Constants should look something like \texttt{kPiOverTwo}. \textbf{???}
+\section{Code Formatting}
+\subsection{Indentation} 
+Spaces (NOT tabs) should be used for indentation. 2 spaces should be used in most cases. 
+\subsection{Line length} 
+Each line should fit in a fullscreen terminal at moderate resolution on a monitor 1280 pixels wide with reasonable resolution. This works out to a maximum length of 179 characters or so. 
+\subsection{Braces} 
+Please use a consistent brace style for each section. 
+\section{Documentation} 
+Every public method should have a doxygen style comment.  Each class or namespace should have a short doxygen style comment describing its purpose in life. Code that does anything complicated may benefit from some explanatory comments. 
+
+\section{Do's and Don'ts} 
+\subsection{Do} 
+\begin{itemize}
+\item Use inline methods for simple getters and setters. 
+\item Use \texttt{const} whenever possible. 
+\item Use the most general subclass whenever possible (e.g. \texttt{TH2} instead of \texttt{TH2F}). 
+\item Try to minimize the use of printouts (except during debugging, of course). 
+\item Make an attempt to spell everything correctly. Probably we slightly prefer American English?
+\end{itemize} 
+\subsection{Don't} 
+\begin{itemize}
+\item Put things, ESPECIALLY enums, into global namespace. 
+\item Use operator overloading. 
+\item Leak memory.  
+\item Randomly Draw() things to canvases. 
+\item Use asserts unless there's a very good reason (or they're only enabled conditionally for debugging). 
+\item Use exceptions in your code. 
+\item Use multiple inheritance unless you are forced to by external code. 
+\end{itemize}
+\end{document}

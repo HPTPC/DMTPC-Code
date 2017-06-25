@@ -1,0 +1,17 @@
+###This file may be used to enable and disable compilation of different DAQ hardware
+
+enable_andor_ikon=0
+enable_alta_u6=0
+enable_fli_proline=1
+enable_caen=1
+enable_alazar=0
+
+
+## you can define locations of sdk's here (or via global variable, if you prefer) 
+
+## ANDOR_SDK for andor ikon sdk directory 
+ANDOR_SDK=/home/dmatter/Software/3rdparty/andor
+
+CAEN_SDK=/usr/
+
+

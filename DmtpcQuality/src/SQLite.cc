@@ -1,0 +1,295 @@
+
+#include <sqlite3.h>
+
+#include <TString.h>
+
+#include <iostream>
+#include <cstdlib>
+#include <cstdio>
+
+#include "SQLite.hh"
+
+#include "Event.hh"
+#include "Dataset.hh"
+
+ClassImp(dmtpc::Quality::SQLite);
+
+dmtpc::Quality::SQLite::SQLite(){}
+
+dmtpc::Quality::SQLite::SQLite(TString db_name)
+{
+
+  //open the database
+  _db_name = db_name;
+  _cmd = "";
+  _exp = -1;
+  _rc = sqlite3_open(_db_name,&_db);
+  isOpen();
+}
+
+dmtpc::Quality::SQLite::~SQLite()
+{
+
+  //if database is still open, be sure to close it
+  if(sqlite3_open(_db_name,&_db))
+    sqlite3_close(_db);
+
+}
+
+
+void dmtpc::Quality::SQLite::createDatabase(){
+
+  //create database
+  _rc = sqlite3_open(_db_name,&_db);
+  if(!isOpen())
+    //    std::cout<<"database opened"<<std::endl;
+    //  else
+    std::cout<<"Can't open database"<<std::endl;
+
+}
+
+bool dmtpc::Quality::SQLite::isOpen(){
+
+  if(_rc != SQLITE_OK){
+    //    std::cerr<<"SQLite DB Not Opened"<<std::endl;
+    return false;
+  }
+  else{
+    //    std::cout<<"SQLite DB Opened"<<std::endl;
+    return true;
+  }
+}
+
+//basic table maker - see below for examples of actually making a table
+void dmtpc::Quality::SQLite::createTable(){
+
+  isOpen();
+
+  if(_cmd.Length()==0){
+    std::cout<<"no command given to create table!"<<std::endl;
+  }
+  //create sqlite table
+  char *zErrMsg = 0;  
+  int rc = sqlite3_exec(_db,_cmd,&dmtpc::Quality::SQLite::callback,0,&zErrMsg);
+  if(!isOpen()){
+    fprintf(stderr, "SQL Create Error %s:\n", zErrMsg);
+    sqlite3_free(zErrMsg);
+  }
+  else{
+    fprintf(stdout, "Table created successfully\n");
+  }
+}
+
+//---Any additional tables can be added in the manner below----//
+void dmtpc::Quality::SQLite::createSparkTable(){
+
+  _cmd = TString("CREATE TABLE SPARKS(run_id INT NOT NULL, channel INT NOT NULL, timestamp_s TIMESTAMP NOT NULL, timestamp_ns TIMESTAMP NOT NULL, current REAL NOT NULL);");
+
+  createTable();
+}
+
+void dmtpc::Quality::SQLite::createRunTable(){
+
+  _cmd = TString("CREATE TABLE RUN(run_id INT NOT NULL, run_start_s INT NOT NULL, run_start_ns INT NOT NULL, run_end_s INT NOT NULL, run_end_ns INT NOT NULL, nbias INT NOT NULL, nexp INT NOT NULL, exp4 INT NOT NULL);");
+
+  createTable();
+}
+
+void dmtpc::Quality::SQLite::createEventTable(){
+
+  _cmd = TString("CREATE TABLE EVENTS(run_id INT NOT NULL, ev INT NOT NULL, timestamp_s INT NOT NULL, timestamp_ns INT NOT NULL);");
+
+  createTable();
+}
+
+void dmtpc::Quality::SQLite::createSparkEventTable(){
+  _cmd = TString("CREATE TABLE SPARK_EVENTS(run_id INT NOT NULL, ev INT NOT NULL, channel INT NOT NULL, spark INT NOT NULL, last_spark_value REAL NOT NULL, last_spark_time INT NOT NULL);");
+
+  createTable();
+}
+
+//need to pass the full sqlite command for this one
+void dmtpc::Quality::SQLite::storeValues(TString cmd){
+  
+  _cmd = cmd;
+  char * zErrMsg;
+  int rc = sqlite3_exec(_db,_cmd,&dmtpc::Quality::SQLite::callback,0,&zErrMsg);
+  if(!isOpen()){
+    fprintf(stderr, "SQL Store Error %s:\n", zErrMsg);
+    sqlite3_free(zErrMsg);
+  }
+  //  else{
+    //    if(verbose)
+    //      fprintf(stdout, "Value stored successfully\n");
+  //  }
+}
+
+//private, for internal use
+int dmtpc::Quality::SQLite::getIResult(){
+  
+
+  //  std::cout<<"cmd: "<<_cmd<<std::endl;
+  
+  if( sqlite3_prepare(_db,_cmd.Data(),128,&_res,&_tail) != SQLITE_OK ) {
+    std::cerr<<"SQL Get Error: "<<sqlite3_errmsg(_db)<<std::endl;
+    return -1;
+  }
+
+  //  int check = sqlite3_step(_res);
+
+  //if( check  == SQLITE_ROW ){
+  while(sqlite3_step(_res) == SQLITE_ROW){
+    int value = sqlite3_column_int(_res,0); 
+    return value;
+  }
+  
+  //  std::cout<<"sqlite_step error"<<std::endl;
+  return -1;
+  
+}
+
+//private for internal use			     
+double dmtpc::Quality::SQLite::getDResult(){
+  
+  if(sqlite3_prepare(_db,_cmd.Data(),128,&_res,&_tail) != SQLITE_OK){
+    std::cerr<<"SQL GetD Error: "<<sqlite3_errmsg(_db)<<std::endl;
+    return -1;
+  }
+  
+  if(sqlite3_step(_res) == SQLITE_ROW)
+    return sqlite3_column_double(_res,0);
+  
+  return -1;
+}
+			      
+int dmtpc::Quality::SQLite::getMaxIValue(TString table, TString column, TString condition){
+
+  if(!isOpen())
+    return -1;
+
+  if(condition.Length() > 0)
+    _cmd = "SELECT " + column + " FROM " + table + " WHERE " + condition + " ORDER BY " + column + " DESC LIMIT 1";
+  else
+    _cmd = "SELECT " + column + " FROM " + table + " ORDER BY " + column + "DESC LIMIT 1";
+
+  if(sqlite3_prepare(_db,_cmd.Data(),128,&_res,&_tail) != SQLITE_OK){
+    std::cerr<<"SQL GetMaxI Error: "<<sqlite3_errmsg(_db)<<std::endl;
+    return -1;
+  }
+  
+  int value = getIResult();
+  return value;
+}
+
+//use this to get a single value, must supply an = condition for this
+int dmtpc::Quality::SQLite::getIValue(TString table, TString column, TString condition){
+  
+  int value = -1;
+
+  if(!isOpen()){
+    std::cout<<"not open"<<std::endl;
+    return value;
+  }
+
+  if(condition.Length() < 1)
+    std::cerr<<"you must set a condition to get a single value"<<std::endl;
+  else
+    _cmd = "SELECT " + column + " FROM " + table + " WHERE " + condition;
+
+
+  //  std::cout<<"cmd: "<<_cmd<<std::endl;
+  //should be v2 of this (for 3.3.9 onwards) - could add check for version
+  /*
+  if(sqlite3_prepare(_db,_cmd.Data(),128,&_res,&_tail) != SQLITE_OK){
+    std::cerr<<"SQL Error: "<<sqlite3_errmsg(_db)<<std::endl;
+    //    return NULL;
+  }
+  while(sqlite3_step(_res) == SQLITE_ROW){
+    value = sqlite3_column_int(_res,0);
+    std::cout<<"value obtained"<<std::endl;
+  }
+  
+    return value;
+  */
+    value = getIResult();
+    return value > 0 ? value : -1;
+}
+
+//use this to get a range of values using > < conditions
+std::vector<int> dmtpc::Quality::SQLite::getIValues(TString table, TString column, TString condition){
+  
+  std::vector<int> values;
+  if(!isOpen()){
+    //    std::cout<<"getIValues error"<<std::endl;
+    return values;
+  }
+
+  if(condition.Length() > 0)
+    _cmd = "SELECT " + column + " FROM " + table + " WHERE " + condition;
+  else
+    _cmd = "SELECT " + column + " FROM " + table;
+  
+  //  std::cout<<"cmd: "<<_cmd<<std::endl;
+
+  //should be v2 of this (for 3.3.9 onwards) - could add check for version
+  if(sqlite3_prepare(_db,_cmd.Data(),128,&_res,&_tail) != SQLITE_OK){
+    std::cerr<<"SQL getIV Error: "<<sqlite3_errmsg(_db)<<std::endl;
+    //    return NULL;
+  }
+  while(sqlite3_step(_res) == SQLITE_ROW){
+    //    values.push_back(getIResult());
+    int value = sqlite3_column_int(_res,0);
+    //    std::cout<<"value: "<<value<<std::endl;
+    values.push_back(value); 
+  }
+  return values;
+}
+
+//  double dmtpc::Quality::SQLite::getValue(TString table, TString column, TString condition){
+
+//use this for single double value using = condition
+double dmtpc::Quality::SQLite::getDValue(TString table, TString column, TString condition){
+  
+  double value = -1;
+
+    if(!isOpen())
+      return value;
+
+  if(condition.Length() < 1)
+    std::cerr<<"you must set a condition to get a single value"<<std::endl;
+  else
+    _cmd = "SELECT " + column + " FROM " + table + " WHERE " + condition;
+
+  //should be v2 of this (for 3.3.9 onwards) - could add check for version
+  if(sqlite3_prepare(_db,_cmd.Data(),128,&_res,&_tail) != SQLITE_OK){
+    std::cerr<<"SQL getD Error: "<<sqlite3_errmsg(_db)<<std::endl;
+    //    return NULL;
+  }
+  if(sqlite3_step(_res) == SQLITE_ROW){
+    value = getDResult();
+  }
+  return value;
+}
+
+//use this to get range of values using > < conditions
+std::vector<double> dmtpc::Quality::SQLite::getDValues(TString table, TString column, TString condition){
+
+  std::vector<double> values;
+
+  if(!isOpen())
+    return values;
+
+  if(condition.Length() > 0)
+    _cmd = "SELECT " + column + " FROM " + table + " WHERE " + condition;
+  else
+    _cmd = "SELECT " + column + " FROM " + table;
+    
+  //  std::cout<<"cmd: "<<_cmd<<std::endl;
+
+  while(sqlite3_step(_res) == SQLITE_ROW){
+    values.push_back(getDResult());
+  }
+  return values;
+}
+
+

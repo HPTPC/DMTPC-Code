@@ -1,0 +1,65 @@
+ {
+  const int nbin = 5;
+  double pixels = 3056*3056;
+  const int ncam = 1;
+  int exp = 2;
+
+  double read_noise[nbin];
+  double adu_pe[ncam];
+  double dark[ncam];
+  read_noise[0] = 11.3;
+  read_noise[1] = 11.3*TMath::Sqrt(2);
+  read_noise[2] = 11.3*TMath::Sqrt(3);
+  read_noise[3] = 11.3*TMath::Sqrt(4);
+  read_noise[4] = 11.3*TMath::Sqrt(8);
+  adu_pe[0] = 1.53;
+  dark[0] = 40.8/(100); //0.7/(100);
+
+  double bin[5] = {1.0,2.0,3.0,4.0,8.0};
+  
+  double noise[5];
+  TCanvas *c1 = new TCanvas("c1","c1",600,400);
+  TMultiGraph *mg = new TMultiGraph();
+  
+  /*for(int c = 0; c < nbin; c++){
+    for(int i = 0; i < 5; i++){
+      noise[i] = (TMath::Sqrt(read_noise[c]*adu_pe[0]*read_noise[c]*adu_pe[0] + dark[0]*exp*dark[0]*exp))/1.41;
+    }
+    gr1 = new TGraph(5,bin,noise);
+    gr1->SetLineColor(kRed);
+    gr1->SetLineWidth(4);
+    
+    }*/
+  
+  Double_t binning[5] = {1.0,2.0,3.0,4.0,8.0};
+  Double_t noise[5] = {11.36,12.49,15.25,17.47,21.28};
+
+  TGraph * gr1 = new TGraph(5,binning,noise);
+  gr1->SetLineColor(kRed);
+  gr1->SetLineWidth(4);
+
+  Double_t binning[3] = {2.0,4.0,8.0};
+  Double_t noise_meassured[3] = {12.7,19.3,38.4};
+  Double_t ex[3] = {.1,.1,.5};
+  Double_t ey[3] = {.8,.7,2.};
+
+  TGraphErrors *gr2 = new TGraphErrors(3,binning,noise_meassured,ex,ey);
+  // gr2->SetLineColor(kRed);                                                                                   
+  gr2->SetMarkerStyle(21);
+  gr2->SetMarkerColor(kBlue);
+
+  mg->Add(gr1);
+  mg->Add(gr2);
+
+  c1->cd();
+  mg->Draw("alp");
+  mg->SetTitle(Form("Predicted Noise vs. Binning"));
+  mg->GetXaxis()->SetTitle("Binning");
+  mg->GetYaxis()->SetTitle("Predicted Noise (ADU)");
+  //  mg->Draw("alp");
+  c1->Update();
+
+
+
+
+}

@@ -1,0 +1,8 @@
+#!/usr/bin/perl
+
+use DM;
+use CGI ':standard';
+use CGI::Carp qw(fatalsToBrowser);
+print "Content-type:text/html\n\n";
+
+print $DM::DETECTOR; 

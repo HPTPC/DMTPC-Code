@@ -1,0 +1,50 @@
+
+<html>
+	<head>
+	<title> DMTPC - Mission Control </title>
+
+	<script type="text/javascript" src="jquery.min.js"></script>
+  <script type="text/javascript" src="jquery.form.min.js"></script>
+	<script>
+	
+	$(document).ready(function()
+	{
+	  var refId = setInterval(function()
+    {
+      $('#slowControl').load('../cgi-bin/testing/printpars_test.pl');
+    },1000); 
+
+    $('#setter').ajaxForm(function() {
+    });
+
+    $('#detname').load('../cgi-bin/getdet'); 
+    $('#menu').load('../cgi-bin/makemenu',function(){$('#li_help').addClass('active')}); 
+
+
+   }); 
+
+
+	
+	</script>
+
+  <link rel="stylesheet" href="styles.css" type="text/css"/>
+
+	</head>
+
+  <body>
+ <div id="all">
+  <img src="gfx/webpageheader.png" alt="DMTPC - Mission Control" />
+  <div id="detname">
+   </div>
+  <div id="menu">
+  </div>
+
+  <div id="main">
+
+    You're on your own, kid. 
+
+  </div>
+
+</div>
+</body></html>
+

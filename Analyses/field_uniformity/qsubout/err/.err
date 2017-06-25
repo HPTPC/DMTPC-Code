@@ -1,0 +1,33 @@
+Error in <TFile::TFile>: file /scratch3/darkmatter/dmtpc/production/skimout/skim/m3/skim/2016/m3_alpha_R000000.rawskim.root does not exist
+
+ *** Break *** segmentation violation
+
+
+
+===========================================================
+There was a crash.
+This is the entire stack trace of all threads:
+===========================================================
+#0  0x00000037ef4ac65e in waitpid () from /lib64/libc.so.6
+#1  0x00000037ef43e609 in do_system () from /lib64/libc.so.6
+#2  0x00007f44084ce292 in TUnixSystem::StackTrace() () from /scratch1/darkmatter/dmtpc/software/root/install/lib/root/libCore.so
+#3  0x00007f44084cb1ba in TUnixSystem::DispatchSignals(ESignals) () from /scratch1/darkmatter/dmtpc/software/root/install/lib/root/libCore.so
+#4  <signal handler called>
+#5  dmtpc::analysis::SkimDataset::createRootFile(char const*, TString) () at src/SkimDataset.cc:322
+#6  0x00007f4403d0dfce in dmtpc::analysis::SkimDataset::openRootFile(char const*) () at src/SkimDataset.cc:378
+#7  0x00000000004053ea in main () at plot_pix_intensity_skim.cc:71
+===========================================================
+
+
+The lines below might hint at the cause of the crash.
+If they do not help you then please submit a bug report at
+http://root.cern.ch/bugs. Please post the ENTIRE stack trace
+from above as an attachment in addition to anything else
+that might help us fixing this issue.
+===========================================================
+#5  dmtpc::analysis::SkimDataset::createRootFile(char const*, TString) () at src/SkimDataset.cc:322
+#6  0x00007f4403d0dfce in dmtpc::analysis::SkimDataset::openRootFile(char const*) () at src/SkimDataset.cc:378
+#7  0x00000000004053ea in main () at plot_pix_intensity_skim.cc:71
+===========================================================
+
+

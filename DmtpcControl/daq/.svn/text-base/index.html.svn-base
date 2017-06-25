@@ -1,0 +1,288 @@
+<html>
+
+  <head>
+ 
+    <link rel="stylesheet" href="pageStyle.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+  
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.js"></script>
+    <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.14.3.js"></script>
+    
+  
+     <script src="m3runControl.js"> </script>
+
+  </head>
+
+
+<body>
+
+
+<div ng-app="myApp3" ng-controller="m3RC_Ctrl">
+
+  &nbsp;
+ DebugLevel:<input type="number" min="0" max="3"
+                      ng-model="debug"  placeholder="0" />
+ &nbsp;&nbsp;
+ heartbeat={{counter}}  
+&nbsp;&nbsp;
+period: <input type="number" ng-model="pollPeriod_s"  min="1" max="30" required > (sec)
+&nbsp;&nbsp;
+<button  ng-show= "pauseTimer " ng-click="restart()" >START timer</button>
+&nbsp;&nbsp;
+uptime: {{time_s| number:0}} (sec)
+&nbsp;&nbsp;
+<button  ng-show= "! pauseTimer " ng-click="pauseTimer=true" >STOP timer</button>
+&nbsp;&nbsp;
+ <button  ng-show= "pauseTimer " type="button"  ng-click="actQuery()">  1 DB-query</button>
+
+<center style="font-size:20px" >  <font color="blue">  DMTPC M3 Run Control </font>  &nbsp;&nbsp; &nbsp;&nbsp; day   {{dayThisYear |number :0 }}
+ of this year</center>
+   
+   <form  name="preRunForm">
+&nbsp;&nbsp;         <b>Operator:</b>  &nbsp;&nbsp;  
+        <input type="radio" ng-model="operator" value="Jan" />Jan
+        <input type="radio" ng-model="operator" value="Michael" />Michael
+        <input type="radio" ng-model="operator" value="Gabriela" />Gabriela
+        <input type="radio" ng-model="operator" value="Natalia" /> Natalia
+        <input type="radio" ng-model="operator" value="Max" /> Max
+        <input type="radio" ng-model="operator" value="Jocelyn" /> Jocelyn
+        <br>
+
+   &nbsp;&nbsp; 
+
+<p ng-hide="true"> ----- BEGIN of CAESAR  privilege ---- </p>
+<p ng-show="aveCaesar ||  debug>0">  
+
+   <label>Run configuration : </label>
+        CCD set temp:
+        <input type="radio" ng-model="ccdSetTemp" value="20" />+20 C,
+        <input type="radio" ng-model="ccdSetTemp" value="10" />+10 C,
+        <input type="radio" ng-model="ccdSetTemp" value="-10" />-10 C,
+        <input type="radio" ng-model="ccdSetTemp" value="-25" />-25 C,
+        <input type="radio" ng-model="ccdSetTemp" value="-29" />-29 C,
+        <input type="radio" ng-model="ccdSetTemp" value="-30" />-30 C
+        <br>
+&nbsp;&nbsp; Set  config: 
+<button  ng-click="xmlConfig='m3_gain'" > gain</button>
+<button  ng-click="xmlConfig='m3_neutron'" > neutron</button>
+<button  ng-click="xmlConfig='m3_'+operator" >private</button>
+&nbsp;&nbsp;  <input type="text" ng-model="xmlConfig" /> [.xml.templ] 
+<br>
+&nbsp;&nbsp;Set  <input type="number" min="1" max="50" ng-model="numBiasFr"  />  biasFrames,
+ &nbsp;&nbsp;&nbsp;&nbsp;
+ <input type="number" min="1" max="500" ng-model="numExpoFr"  /> exposureFrames
+ &nbsp;&nbsp;&nbsp;&nbsp;
+<input type="checkbox" ng-model="preRunDone">pre-run completed
+ &nbsp;&nbsp;&nbsp;&nbsp;
+<input type="checkbox" ng-model="autoSequencerEnable">enable sequencer
+ &nbsp;&nbsp; <text ng-show="autoSequencerEnable"> 
+<input type="number" min="0" max="50"
+                      ng-model="autoSeqJobsLeft"  placeholder="0" />
+ left runs
+  </text>
+
+<br>        
+<br>
+
+ &nbsp;&nbsp;&nbsp;&nbsp;
+        <button type="button"  type="button" class="btn btn-success  btn-lg" ng-click="RunStart()"  	ng-disabled="turnOff" /> START Production Run  <b ng-show="turnOff"> </b> </button>
+ 
+ &nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="button" type="button" class="btn btn-danger"  ng-click="preRunAbort()"  value="ABORT all " />
+
+ &nbsp;&nbsp;&nbsp;&nbsp;
+        <button type="button"  type="button" class="btn btn-success  btn-lg" ng-click="preRunStart()"  	ng-disabled="turnOff" /> START Pre-Run  <b ng-show="turnOff">  </b> </button>
+
+</p>  <p ng-hide="true"> ----- END of CAESAR  privilege ---- </p>
+
+</form>
+
+ 
+
+<hr>
+<p ng-hide="true">
+***** Do some calculation, not to be shown *****
+
+
+{{json1=resultPhp.json1}}
+
+{{jRun=resultPhp.jsonRun}}
+{{json3=resultPhp.json3}}
+{{jDcRes=resultPhp.jsonDcRes}}
+{{jCcdTemp=resultPhp.jsonCcdTemp}}
+{{caesar=resultPhp.jsonRun.caesar}}
+
+{{turnOff=(json1.numTask0+resultPhp.numTask1+resultPhp.numTask2>0)}}  
+Example:
+RunCtrl.sh startRun  /data/2016/01/ m3_Jan_R1007001  1007001 10 20    1
+</p>
+
+<p ng-hide="aveCaesar &&  debug==0">  
+
+CAESAR is: operator={{caesar.operator}}, {{caesar.geoLocation}}, GPS-loc={{caesar.gpsLocation}},  client-IP={{caesar.clientIp}}
+
+<br>
+You are : operator= {{operator}}, client IP={{client.ip}}, GPS-loc={{client.loc}},  aveCaesar={{aveCaesar}} 
+ &nbsp;&nbsp;  <input type="button" type="button" class="btn btn-warning"  ng-click="beCaesar()"  value="ave CAESAR:  {{operator}} " />
+<hr>
+</p>
+
+
+<div class="row">
+ <div class="col-sm-2">
+run <b>{{jRun.run_start.runId}} </b>
+</div> 
+ <div class="col-sm-3"><uib-progressbar value="curBiasFrm"  max="jRun.run_start.setNumBias"> BIAS {{curBiasFrm}} </uib-progressbar> </div> 
+  
+  <div class="col-sm-5"><uib-progressbar class="progress-striped" value="curExpoFrac" type="warning">EXPO {{curExpoFrac|number:0}}%</uib-progressbar></div> 
+
+</div>
+
+
+<table>
+Most recent run <b>{{jRun.run_start.runId}} </b>
+&nbsp;&nbsp;&nbsp;&nbsp;
+  Set query expiration <input type="number" min="1" max="100"
+                      ng-model="onlDbExpirationTime_min"  />  minutes
+
+
+ 
+<tr> <td> num Bias frames </td> <td> num Exposures </td> <td> completed fract </td>  <td> scope0 occupancy</td> </tr>
+<tr> <th> {{curBiasFrm}} </th> <th>{{curExpoFrm}} </th> <th> {{curTotFrac|number:0}} (%) </th> <th>{{jRun.avr_occupancy_scope0.value|number:2}}  </th> 
+</table>
+
+
+<br>
+Last  requested run <b>{{jRun.run_lock.runId}} </b> made <b>{{lockRun_s|number:0}}</b> sec ago  by  operator: <b>{{jRun.run_lock.operator}} </b> at  <b>{{jRun.run_lock.timeStamp}} </b><br>
+
+Last started run <b>{{jRun.run_start.runId}} </b> 
+  with set nBias:{{jRun.run_start.setNumBias}} nExpo:{{jRun.run_start.setNumExpo}}
+   output name: <b>{{jRun.run_start.outName}} </b> <br>
+
+Last ended run <b>{{jRun.run_end.runId}} </b> stopped at   <b>{{jRun.run_end.timeStop}} </b>, numExposures:  <b>{{jRun.run_end.numExposures}} </b>, remark:  <b>{{jRun.run_end.remark}} </b>
+
+<figure   ng-hide="preRunDone">
+ 
+<table > <br>Table-0a :  <font color="green"> (editable) set DC bias </font >and last measured dc_offset residua.
+<tr> <th> chann </th>  <th> set bias <br> (mV) </th>
+  <th> residue<br> (mV) </th><th> resSigma <br> (mV) </th><th> status </th> <th> from runId  </th> 
+<tr ng-repeat="(key, record) in jDcRes" ng-show='record["sigma"]>0 || debug>0'>
+ <td> ch {{$index}}</td> 
+<td bgcolor="#00FF00"> <input  type="number" min="-100" max="100" type="text" ng-model='dcBias[$index]'></td>
+<td> {{ record["value"]|number:0 }}</td> 
+ <td> {{ record["sigma"]|number:1 }}</td>   
+ <td> {{ record["status"] }}</td> 
+ <td> {{ record["runId"] }}</td> 
+</tr>
+
+</table>
+ch_4a<img ng-src="{{imageUrl_ch4?image:' '}}"/>
+B:<img ng-src="{{imageUrl_ch4}}"/>
+
+ch_6a<img ng-src="{{imageUrl_ch6?image:' '}}"/>
+C:<img ng-src="{{imageUrl_ch6}}"/>
+
+
+<figcaption> Plot of measured residua for last completed  PreRun. </figcaption>
+</figure>
+
+
+ <table > <br>Table-0b : temperatures of CCD cameras,
+ set expiration <input type="number" min="1" max="100"
+                      ng-model="onlDbExpirationTime_min"  />  minutes
+
+<tr> <th> Cam TL (SN14)</th> <th> Cam TR (SN24) </th> <th> Cam BR (SN26) </th> <th> Cam BL (SN54) </th> </tr>
+<tr >
+ <td> {{jCcdTemp.PL0141514.value |number:1}} (C)</td> 
+ <td> {{jCcdTemp.PL0251514.value |number:1}} (C)</td> 
+ <td> {{jCcdTemp.PL0261514.value |number:1}} (C)</td> 
+ <td> {{jCcdTemp.PL0544710.value |number:1}} (C)</td> 
+</tr>
+
+</table >
+
+<table > <br>Table-2 : active processes on m3daq
+<tr> <th> Active Tasks </th>  <th># instances </th> <th> PID  </th>  <th> run time (sec)</tr>
+<tr ng-show='json1.numTask0>0 || debug>0'  >
+ <td  > SimpleDAQ </td> 
+ <td> {{json1.numTask0}}</td> 
+ <td> {{json1.pidTask0}}</td> 
+ <td> {{json1.secTask0}}</td> 
+</tr>
+<tr ng-show='json1.numTask1>0 || debug>0'>
+ <td > CalcScopeBias </td> 
+ <td> {{json1.numTask1}}</td> 
+ <td> {{json1.pidTask1}}</td> 
+ <td> {{json1.secTask1}}</td> 
+</tr>
+<tr ng-show='json1.numTask2>0 || debug>0' >
+ <td > PreRunCtrl.sh </td> 
+ <td> {{json1.numTask2}}</td> 
+ <td> {{json1.pidTask2}}</td> 
+ <td> {{json1.secTask2}}</td> 
+</tr>
+<tr ng-show='json1.numTask3>0 || debug>0' >
+ <td  > fakeDAQ </td> 
+ <td> {{json1.numTask3}}</td> 
+ <td> {{json1.pidTask3}}</td> 
+ <td> {{json1.secTask3}}</td> 
+</tr>
+
+</table >
+
+
+
+ <table > <br>Table-1 : Load on m3daq
+<tr> <th> DB age {{db_age_s | number:1}} sec </th>  <th> CPU load </th> <th> free  /data (GB) </th></tr>
+<tr >
+ <td> {{json1.timeStamp}}</td> 
+ <td> {{json1.wLoad}}</td> 
+ <td> {{json1.freeDisc/1000.| number:3}}</td> 
+</tr>
+<tr><td colspan=3>  {{json1.remark}}</td> </tr>
+</table >
+
+
+
+<hr>
+
+RAW DUMP of PHP output if dbg>0, dbg={{debug}}:
+
+<pre ng-hide= "debug <1 "> {{resultPhp}}
+<b>  PHP-MYSQL  debugging section </b> <br>
+RAW DUMP of PHP status:
+
+{{statusPhp}}<br>
+
+===jsonRC===
+{{ resultPhp.json1|json}}
+
+===jsonRun===
+{{ resultPhp.jsonRun}}
+
+===jsonDcRes===
+{{ resultPhp.jsonDcRes|json}}
+
+===jsonCcdTemp===
+{{ resultPhp.jsonCcdTemp}}
+
+</pre> 
+
+</p>
+
+<hr>
+<b>  PHP-SHELL  debugging section </b>
+ , PHP result:<br>
+<pre>
+        {{resultShell}}
+</pre>     
+
+
+
+</div>
+
+  </body>
+
+</html>

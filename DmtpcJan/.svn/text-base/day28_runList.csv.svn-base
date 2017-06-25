@@ -1,0 +1,33 @@
+# day 28+ = AmBe  below the BL quadrant,
+# camSrc=0 camId=2 SN=PL0261514   temp/C=-29.0
+# camSrc=1 camId=3 SN=PL0544710   temp/C=-29.0
+# mesh voltage off, shutter closed, 10 bias, 200 exposures, chamber evacuated
+# only 2 cameras were read out
+# cam0 = BR, cam1 = BL, 2x2 binning, -29 C
+# Runs 1028100-1029004, Fe-55 (x4), AmBe (underneath chamber to the left)
+#run No,  frame count, sec/frame,rawBin, C-temp, cam0 HV, cam1 HV, cam2 HV, cam3 HV, remark
+1028100, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1028101, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1028102, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1028103, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1028104, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1028105, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1028106, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1028107, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1028108, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1028109, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1028110, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1028111, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1028112, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1028113, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1028114, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1028115, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1028116, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1028117, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1028118, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1028119, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1029001, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1029002, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1029003, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+1029004, 200, 2, -29, 2x2, 0, 0, 0, 0, AmBe source  below the BL quadrant
+#

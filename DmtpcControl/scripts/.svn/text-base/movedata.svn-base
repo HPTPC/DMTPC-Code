@@ -1,0 +1,24 @@
+#!/usr/bin/perl
+	    
+
+$source=$ARGV[0];
+$dest=$ARGV[1];
+
+print "Move data from $source to $dest:\n";
+
+
+my @files = ();
+opendir(DIR, $source);
+@files = grep(/\.root$/, readdir(DIR));
+closedir(DIR);
+
+foreach $file (@files) {
+   $filecopydir="$dest/$file";
+   unless (-e $filecopydir) {
+     print  "cp /data/$file $filecopydir \n";
+     system("cp /data/$file $filecopydir")
+     #system("ls -l  /data/$file");
+   }
+}
+
+    

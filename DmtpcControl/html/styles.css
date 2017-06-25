@@ -1,0 +1,185 @@
+body{
+      background-color: #cccccc; 
+		}
+	
+
+
+a:link, a:visited
+    {
+      text-decoration: none; 
+      outline: none; 
+      color: red; 
+    }
+
+a:link IMG { border:none; } 
+a:visited IMG { border:none; } 
+
+#lscontrols
+{
+  background-color:#eee;
+  padding:4px;
+  border: 1px solid #666;
+}
+
+div.log
+{
+  overflow: auto; 
+  height: 400px; 
+  width: 800px; 
+  background-color:000; 
+  color: #ddd; 
+  padding: 4px; 
+  border: 1px solid #666;
+  margin: 0px auto; 
+
+}
+
+
+div#popup
+{
+  position: absolute; 
+  width: 670px;
+  height:600px;
+  background-color:white;
+  z-index:9002;
+}
+
+div#blanket
+{
+  position:absolute;
+  background-color:#222;
+  z-index:9000;
+  top:0px;
+  left:0px;
+  width:100%;
+  opacity: 0.8;
+  filter:alpha(opacity=80);
+}
+
+a:hover
+    {
+      text-decoration: underline;
+      color: yellow; 
+      border: 1px; 
+    }
+    
+a:hover IMG { border:1px; } 
+   
+hr 
+{
+  width: 200px;
+}
+
+#monitor
+    {
+			float: left; 
+      padding: 4px; 
+			width: 355px;
+      background-color: #dddddd; 
+		}
+
+#daqcontrol
+{
+			float: center; 
+      padding: 4px; 
+			width: 910px;
+      background-color: #ccc; 
+}
+   
+#detname
+{
+  position: relative;
+  top: -60px;
+  left: 655px;
+  width: 30px; 
+  color: #ff0;
+  height: 0px; 
+  font-size: 30px;
+}
+
+
+#formp
+  {
+    text-align: left; 
+    margin-left: 500px; 
+  }
+
+#buttons
+    {
+      background-color: #dddddd;
+    }
+#main
+    {
+      background-color: #b3b3b3;
+      padding: 8px; 
+      width: 920px;
+		} 
+
+td
+    {
+      background-color: #b3b3b3;   
+    }
+    
+table
+    {
+      border: 0px;
+      border-spacing: 5px; 
+    }
+
+#all
+{
+  margin-left: auto; 
+  margin-right: auto; 
+  width: 920px;
+}
+
+/* Tab bar code beneath from http://woork.blogspot.com/2008/03/clean-tab-bar-digg-like-using-css.html */
+
+ul, li{border:0; margin:0; padding:0; list-style:none;}
+
+ul
+{
+      border-bottom:solid 1px #cccccc;
+      height:29px;
+      padding-left:20px;
+ }
+ 
+li{float:left; margin-right:2px;}
+
+.tab a:link, .tab a:visited
+{
+    background:url(gfx/tab_round.png) right 60px;
+    color:#666666;
+    display:block;
+    font-weight:bold;
+    height:30px;
+    line-height:30px;
+    text-decoration:none;
+}
+.tab a span{
+  background:url(gfx/tab_round.png) left 60px;
+  display:block;
+  height:30px;
+  margin-right:14px;
+  padding-left:14px;
+}
+.tab a:hover
+{
+  background:url(gfx/tab_round.png) right 30px;
+  display:block;
+}
+.tab a:hover span{
+  background:url(gfx/tab_round.png) left 30px;
+  display:block;
+}
+
+/* -------------------------------- */
+/* ACTIVE ELEMENTS */
+.active a:link, .active a:visited, .active a:visited, .active a:hover
+{
+  background:url(gfx/tab_round.png) right 0 no-repeat;
+}
+
+.active a span, .active a:hover span{
+  background:url(gfx/tab_round.png) left 0 no-repeat;
+}

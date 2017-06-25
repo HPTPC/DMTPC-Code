@@ -1,0 +1,125 @@
+Warning in <TStreamerInfo::BuildCheck>: 
+   The StreamerInfo of class TAttMarker read from file /scratch3/darkmatter/dmtpc/production/skimout/skim/m3/skim/2016/m3_GabrielaF_R1102010.rawskim.root
+   has the same version (=2) as the active class but a different checksum.
+   You should update the version to ClassDef(TAttMarker,3).
+   Do not try to write objects with the current class definition,
+   the files will not be readable.
+
+Warning in <TStreamerInfo::CompareContent>: The following data member of
+the on-file layout version 2 of class 'TAttMarker' differs from 
+the in-memory layout version 2:
+   short fMarkerColor; //
+vs
+   Color_t fMarkerColor; //
+Warning in <TStreamerInfo::CompareContent>: The following data member of
+the on-file layout version 2 of class 'TAttMarker' differs from 
+the in-memory layout version 2:
+   short fMarkerStyle; //
+vs
+   Style_t fMarkerStyle; //
+Warning in <TStreamerInfo::CompareContent>: The following data member of
+the on-file layout version 2 of class 'TAttMarker' differs from 
+the in-memory layout version 2:
+   float fMarkerSize; //
+vs
+   Size_t fMarkerSize; //
+Info in <TCanvas::MakeDefCanvas>:  created default TCanvas with name c1
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).
+Warning in <TFile::Append>: Replacing existing TH1: ph (Potential memory leak).

@@ -1,0 +1,19 @@
+#! /usr/bin/perl
+
+use DM; 
+use CGI ':standard'; 
+use CGI::Carp qw(fatalsToBrowser); 
+
+
+print "Content-type:text/html\n\n";
+
+if (DM->check_shutter())
+{
+  print "Shutter <span style=\"background-color:#00ff00;\"><b>ON</b></span>"; 
+}
+else
+{
+  print "Shutter <span style=\"background-color:#ff0000;\"><b>OFF</b></span>"; 
+}
+
+

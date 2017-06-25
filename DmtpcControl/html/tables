@@ -1,0 +1,333 @@
+CREATE TABLE `hv_status` (
+  `value` int NOT NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `sparkMonitor_status` (
+  `value` int NOT NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+
+#ENVIRONMENTAL 
+
+CREATE TABLE `set_pressure` (
+`value` float NOT NULL, 
+`busy` tinyint(1) default NULL,
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `chamber_pressure_cdg` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `chamber_pressure_bpg` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `turbo_pressure_cdg` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `temp0` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `temp1` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `ccdTemp_PL0141514` (
+`value` float NOT NULL,
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `ccdTemp_PL0251514` (
+`value` float NOT NULL,
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `ccdTemp_PL0261514` (
+`value` float NOT NULL,
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `ccdTemp_PL0544710` (
+`value` float NOT NULL,
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+
+#CONTROL VOLTAGES (READ)
+
+CREATE TABLE `caen_brd0_ch0_hv` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd0_ch1_hv` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd0_ch2_hv` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd0_ch3_hv` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd1_ch0_hv` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd1_ch1_hv` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd1_ch2_hv` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd1_ch3_hv` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+
+#CHANNEL STATUS (READ)
+
+CREATE TABLE `caen_brd0_ch0_status` (
+`value` smallint(2) UNSIGNED NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd0_ch1_status` (
+`value` smallint(2) UNSIGNED NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd0_ch2_status` (
+`value` smallint(2) UNSIGNED NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd0_ch3_status` (
+`value` smallint(2) UNSIGNED NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd1_ch0_status` (
+`value` smallint(2) UNSIGNED NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd1_ch1_status` (
+`value` smallint(2) UNSIGNED NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd1_ch2_status` (
+`value` smallint(2) UNSIGNED NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd1_ch3_status` (
+`value` smallint(2) UNSIGNED NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+
+#CONTROL VOLTAGES (SET)
+
+CREATE TABLE `caen_brd0_ch0_set_hv` (
+`value` float NOT NULL, 
+`busy` tinyint(1) default NULL,
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd0_ch1_set_hv` (
+`value` float NOT NULL, 
+`busy` tinyint(1) default NULL,
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd0_ch2_set_hv` (
+`value` float NOT NULL, 
+`busy` tinyint(1) default NULL,
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd0_ch3_set_hv` (
+`value` float NOT NULL, 
+`busy` tinyint(1) default NULL,
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd1_ch0_set_hv` (
+`value` float NOT NULL, 
+`busy` tinyint(1) default NULL,
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd1_ch1_set_hv` (
+`value` float NOT NULL, 
+`busy` tinyint(1) default NULL,
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd1_ch2_set_hv` (
+`value` float NOT NULL, 
+`busy` tinyint(1) default NULL,
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd1_ch3_set_hv` (
+`value` float NOT NULL, 
+`busy` tinyint(1) default NULL,
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+
+
+#CURRENTS (READ)
+
+CREATE TABLE `caen_brd0_ch0_i` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd0_ch1_i` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd0_ch2_i` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd0_ch3_i` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd1_ch0_i` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd1_ch1_i` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd1_ch2_i` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE `caen_brd1_ch3_i` (
+`value` float NOT NULL, 
+`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+KEY `timestamp_idx` (`timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1
+
+
+
+
+
+// initialize tables;
+
+INSERT INTO caen_brd0_ch0_hv (value) VALUES (0.0);
+INSERT INTO caen_brd0_ch1_hv (value) VALUES (0.0);
+INSERT INTO caen_brd0_ch2_hv (value) VALUES (0.0);
+INSERT INTO caen_brd0_ch3_hv (value) VALUES (0.0);
+INSERT INTO caen_brd1_ch0_hv (value) VALUES (0.0);
+INSERT INTO caen_brd1_ch1_hv (value) VALUES (0.0);
+INSERT INTO caen_brd1_ch2_hv (value) VALUES (0.0);
+INSERT INTO caen_brd1_ch3_hv (value) VALUES (0.0);
+
+INSERT INTO caen_brd0_ch0_i (value) VALUES (0.0);
+INSERT INTO caen_brd0_ch1_i (value) VALUES (0.0);
+INSERT INTO caen_brd0_ch2_i (value) VALUES (0.0);
+INSERT INTO caen_brd0_ch3_i (value) VALUES (0.0);
+INSERT INTO caen_brd1_ch0_i (value) VALUES (0.0);
+INSERT INTO caen_brd1_ch1_i (value) VALUES (0.0);
+INSERT INTO caen_brd1_ch2_i (value) VALUES (0.0);
+INSERT INTO caen_brd1_ch3_i (value) VALUES (0.0);
+
+INSERT INTO caen_brd0_ch0_status (value) VALUES (0);
+INSERT INTO caen_brd0_ch1_status (value) VALUES (0);
+INSERT INTO caen_brd0_ch2_status (value) VALUES (0);
+INSERT INTO caen_brd0_ch3_status (value) VALUES (0);
+INSERT INTO caen_brd1_ch0_status (value) VALUES (0);
+INSERT INTO caen_brd1_ch1_status (value) VALUES (0);
+INSERT INTO caen_brd1_ch2_status (value) VALUES (0);
+INSERT INTO caen_brd1_ch3_status (value) VALUES (0);
+
+INSERT INTO caen_brd0_ch0_set_hv (value) VALUES (0.0);
+INSERT INTO caen_brd0_ch1_set_hv (value) VALUES (0.0);
+INSERT INTO caen_brd0_ch2_set_hv (value) VALUES (0.0);
+INSERT INTO caen_brd0_ch3_set_hv (value) VALUES (0.0);
+INSERT INTO caen_brd1_ch0_set_hv (value) VALUES (0.0);
+INSERT INTO caen_brd1_ch1_set_hv (value) VALUES (0.0);
+INSERT INTO caen_brd1_ch2_set_hv (value) VALUES (0.0);
+INSERT INTO caen_brd1_ch3_set_hv (value) VALUES (0.0);
+
+
+

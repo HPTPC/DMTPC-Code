@@ -1,0 +1,29 @@
+int cam = 1; //BL quadrant
+
+void all_images(int run=5002)
+{
+  gSystem->Load("$DMTPC_HOME/DmtpcCore/lib/libDmtpcCore.so");
+  gSystem->Load("$DMTPC_HOME/DmtpcWaveform/lib/libDmtpcWaveform.so");
+  dmtpc::core::Dataset *d = new dmtpc::core::Dataset;
+  d->open(TString::Format("/scratch1/darkmatter/dmtpc/data/m3/2016/m3_Michael_R%d.raw.root",run));
+  cout << "# events: " << d->nevents() << endl;
+  TCanvas *c1 = new TCanvas("c1","c1",0,0,400,400);
+  //TH2I* myBias = d->biasAvg(3);                                                                                                       
+  //myBias->Draw("colz");                                                                                                               
+  //c1->Modified();                                                                                                                     
+  //c1->Update();                                                                                                                       
+
+  for (int i=0; i< d->nevents();i++){
+    //            if (i<20) continue;                                                                                                   
+    d->getEvent(i);
+    TH2I* myImage = d->event()->getImage(cam)->getHist();
+    myImage->Print("base");
+    myImage->GetZaxis()->SetRangeUser(10,2000);
+    c1->cd();
+    //c1->SetLogz();                                                                                                                    
+    myImage->Draw("colz");
+    c1->Modified();
+    c1->Update();
+    getchar();
+  }
+}

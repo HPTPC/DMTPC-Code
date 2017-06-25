@@ -1,0 +1,127 @@
+#! /usr/bin/env python
+
+import os
+import sys
+
+
+#if not "DMTPC_SVNROOT" in os.environ: 
+#  print "ERROR: DMTPC_SVNROOT not defined" 
+#  print "   Please define the working svn root as $DMTPC_SVNROOT"
+
+if not "DMTPC_HOME" in os.environ: 
+  print "ERROR: DMTPC_HOME not defined" 
+  print "   Please define the working svn root as $DMTPC_HOME"
+
+
+base = os.environ["DMTPC_HOME"] 
+
+dirs = {}; 
+dirs["core"] = "DmtpcCore"
+dirs["waveform"] = "DmtpcWaveform"
+dirs["physics"] = "DmtpcPhysics"
+dirs["math"] = "DmtpcMath"
+dirs["daq"] = "DmtpcDAQ"
+dirs["control"] = "DmtpcControl"
+dirs["mcamp"] = "DmtpcMonteCarlo/MCAmp" 
+dirs["retrim"] = "DmtpcMonteCarlo/retrim" 
+dirs["image"] = "DmtpcImage" 
+dirs["analysis"] = "DmtpcAnalysis" 
+dirs["mctpc"] = "DmtpcMonteCarlo/mctpc" 
+dirs["wimpspectrum"] = "DmtpcMonteCarlo/WimpSpectrum" 
+dirs["quality"] = "DmtpcQuality"
+
+libs = {}; 
+libs["core"] = "-lDmtpcCore"
+libs["waveform"] = "-lDmtpcWaveform"
+libs["physics"] = "-lDmtpcPhysics"
+libs["math"] = "-lDmtpcMath -lfftw3"
+libs["daq"] = "-lDmtpcDAQ"
+libs["control"] = "-lDmtpcControl"
+libs["mcamp"] = "-lMCAmp" 
+libs["image"] = "-lDmtpcImage" 
+libs["retrim"] = "-lretrim" 
+libs["analysis"] = "-lDmtpcAnalysis" 
+libs["mctpc"] = "-lmctpc" 
+libs["wimpspectrum"] = "-lWimpSpectrum" 
+libs["quality"] = "-lDmtpcQuality"
+
+core_libs = ["core","waveform","physics","math","image"] 
+all_libs = ["core","waveform","physics","math","image","daq","control","mcamp","retrim","analysis","mctpc","wimpspectrum","quality"] 
+
+for arg in sys.argv[1:]:
+
+  if arg[:6]  == "--lib-":
+    key = arg[6:] 
+    if not (key in dirs) or (not key in libs): 
+      print "unsupported value " + arg
+    else:
+      print "-L"+base+"/" + dirs[key] + "/lib " + libs[key]
+
+  elif arg[:6]  == "--inc-":
+    key = arg[6:] 
+    if not key in dirs: 
+      print "unsupported value " + arg
+    else:
+      print "-I"+base+"/" + dirs[key] + "/include " 
+ 
+  elif arg == "--libs":
+    out = ""
+    for lib in core_libs: 
+      out+= "-L"+base+"/" + dirs[lib] + "/lib " + libs[lib] + " "
+    print out
+
+  elif arg == "--includes":
+    out = ""
+    for lib in core_libs: 
+      out+= "-I"+base+"/" + dirs[lib] + "/include "
+    print out
+
+  elif arg == "--ldpath": 
+    out = ""
+    for lib in core_libs: 
+      out+= base+"/" + dirs[lib] + "/lib:"
+    print out
+
+  elif arg == "--ldpathall": 
+    out = ""
+    for lib in all_libs: 
+      out+= base+"/" + dirs[lib] + "/lib:"
+    print out
+
+  elif arg == "--includesall": 
+    out = ""
+    for lib in all_libs: 
+      out+= "-I"+base+"/" + dirs[lib] + "/include "
+    print out
+
+  elif arg == "--libsall": 
+    out = ""
+    for lib in all_libs: 
+      out+= "-L"+base+"/" + dirs[lib] + "/lib " + libs[lib] + " "
+    print out
+
+
+  else: 
+      print "unsupported value " + arg
+
+
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

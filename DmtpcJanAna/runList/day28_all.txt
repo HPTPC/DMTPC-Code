@@ -1,0 +1,55 @@
+#day 28 = AmBe  below the BL quadrant,
+#day 29 = no AmBe
+#only 2 cameras were read out
+#Both sets of runs: voltage off, shutter closed, 10 bias, 200 exposures, chamber evacuated
+#cam0 = BR, cam1 = BL, 2x2 binning, -29 C
+m3_Michael_R1028100.raw.root
+m3_Michael_R1028101.raw.root
+m3_Michael_R1028102.raw.root
+m3_Michael_R1028103.raw.root
+m3_Michael_R1028104.raw.root
+m3_Michael_R1028105.raw.root
+m3_Michael_R1028106.raw.root
+m3_Michael_R1028107.raw.root
+m3_Michael_R1028108.raw.root
+m3_Michael_R1028109.raw.root
+m3_Michael_R1028110.raw.root
+m3_Michael_R1028111.raw.root
+m3_Michael_R1028112.raw.root
+m3_Michael_R1028113.raw.root
+m3_Michael_R1028114.raw.root
+m3_Michael_R1028115.raw.root
+m3_Michael_R1028116.raw.root
+m3_Michael_R1028117.raw.root
+m3_Michael_R1028118.raw.root
+m3_Michael_R1028119.raw.root
+m3_Michael_R1029001.raw.root
+m3_Michael_R1029002.raw.root
+m3_Michael_R1029003.raw.root
+m3_Michael_R1029004.raw.root
+m3_Michael_R1029005.raw.root
+m3_Michael_R1029006.raw.root
+m3_Michael_R1029007.raw.root
+m3_Michael_R1029008.raw.root
+m3_Michael_R1029009.raw.root
+m3_Michael_R1029010.raw.root
+m3_Michael_R1029011.raw.root
+m3_Michael_R1029012.raw.root
+m3_Michael_R1029013.raw.root
+m3_Michael_R1029014.raw.root
+m3_Michael_R1029015.raw.root
+m3_Michael_R1029016.raw.root
+m3_Michael_R1029017.raw.root
+m3_Michael_R1029018.raw.root
+m3_Michael_R1029019.raw.root
+m3_Michael_R1029020.raw.root
+m3_Michael_R1029021.raw.root
+m3_Michael_R1029022.raw.root
+m3_Michael_R1029023.raw.root
+m3_Michael_R1029025.raw.root
+m3_Michael_R1029026.raw.root
+m3_Michael_R1029027.raw.root
+m3_Michael_R1029028.raw.root
+m3_Michael_R1029029.raw.root
+m3_Michael_R1029030.raw.root
+#

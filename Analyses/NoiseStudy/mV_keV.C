@@ -1,0 +1,43 @@
+{
+
+
+  float charge[0] = 1.6e-09;
+  
+  int n = 2000;
+  double E[n];
+  double Vout[n];
+  double Ggas[0] = 125000;
+  double w[0] = 0.034;
+  double Gamp[0] = 5.7;
+  
+  
+   
+  TCanvas *c1 = new TCanvas("c1","c1",600,400);
+  TMultiGraph *mg = new TMultiGraph();
+ 
+  for(int i = 1; i < n+1; i++){
+    E[i] = i + 1;
+    Vout[i] = (Ggas[0] * Gamp[0] * charge[0] * E[i])/w[0];
+       
+    gr1 = new TGraph(i,E,Vout);
+    gr1->SetLineColor(kRed);
+    gr1->SetLineWidth(2);
+
+   }
+
+  TFile mv_kev("mv_kev.root","RECREATE");
+  
+  mg->Add(gr1);
+    
+  c1->cd(); 
+  mg->Draw("alp");
+  mg->SetName("VvsE");
+  mg->SetTitle(Form("Vout VS CCD Energy"));                                          
+  mg->GetXaxis()->SetTitle("Energy (keV)");                                                        
+  mg->GetYaxis()->SetTitle("V out (mV)");                                                    
+  mg->Write();
+  c1->Update();
+
+  mv_kev->Close();
+  
+}

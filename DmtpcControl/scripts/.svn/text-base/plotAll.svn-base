@@ -1,0 +1,35 @@
+#! /usr/bin/perl
+use CGI ':standard' ;
+use CGI::Carp qw(fatalsToBrowser) ;
+
+
+#/usr/bin/perl/ plotpress TYPE=lin &> /dev/null
+
+my @args=('usr/bin/perl','../cgi-bin/testing/plotpress');
+system(@args) == 0 or die "plotpress failed"; 
+
+print header(), start_html() ;
+print "<table border='0' width='100%' cellpadding='5'>" ;
+print "<tr>" ;
+
+print "<td width='50%' valign='top' halign='center'>"; 
+print "<h3>Chamber Pressure</h3> <br>" ;
+print "<img src='/tmp/pressure_tmp.gif' height='90%' width='90%' /><br>" ;
+print "<h3>Average Pixel Yield</h3><img src='/tmp/avgpixel_in_ccd.gif' height='90%' width='90%' /><br>" ;
+print "<h3>I</h3><img src='/tmp/i_tmp.gif' height='90%' width='90%' /><br>" ;
+
+print "</td>" ;
+
+print "<td width='50%' valign='top' halign='center'>" ;
+print "<h3>CCD Temperature</h3> <br>" ;
+print "<img src='/tmp/temperature_in_ccd.gif' height='90%' width='90%' /><br>" ;
+print "<h3>Temp0</h3><img src='/tmp/value_in_temp0.gif' height='90%' width='90%' /><br>" ;
+print "<h3>HV</h3><img src='/tmp/hv_tmp.gif' height='90%' width='90%' /><br>" ;
+
+print "</td>" ;
+
+print '</tr>' ;
+print '</table>' ;
+
+
+print end_html() ;

@@ -1,0 +1,15 @@
+Quality Framework
+Author: Richard Eggleston Feb 2016
+
+--Main Files--
+
+MySQL(.hh/.cc): Class for accessing the MySQL database and returning values
+SQLite(.hh/.cc): Class for accessing SQLite database files (reading and writing)
+RunQuality(.hh/.cc): Class for assesing the quality of a run, event by event
+		     quite simple at the moment but intended for expansion
+
+--Main Executables--
+To be run on m3daq:
+extractDatabase: stores useful parameters from the MySQL databases to a SQLite file (currently only spark info)
+To be run anywhere (transfer sqlite output from previous step!)
+runChecker: uses RunQuality to provide easy user functionality to assess events (currently only if sparks)

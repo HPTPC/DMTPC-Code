@@ -1,0 +1,194 @@
+
+<html>
+	<head>
+	<title> DMTPC - Mission Control </title>
+
+	<script type="text/javascript" src="jquery.min.js"></script>
+  <script type="text/javascript" src="jquery.form.min.js"></script>
+	<script>
+	
+	$(document).ready(function()
+	{
+    lock(); 
+    update_out(); 
+
+
+    var refid = setInterval(lock,1000); 
+    $('#detname').load('../cgi-bin/getdet'); 
+    $('#menu').load('../cgi-bin/makemenu',function(){$('#li_daq').addClass('active');}); 
+
+    //Set up form
+
+    var formopts = {
+                     beforeSubmit: lock
+                   };
+
+    $('#ccdinitform').ajaxForm(formopts); 
+    $('#usbresetform').ajaxForm(formopts); 
+    $('#daqform').ajaxForm(formopts); 
+
+   }); 
+
+   function update_out()
+   { 
+   
+     $('#daqout').load('../cgi-bin/printlog?which=daq');
+     if ($('#daq_auto').attr('checked')) 
+     {
+       var div = $("#daqout")[0]; 
+       var scrollHeight = Math.max(div.scrollHeight, div.clientHeight);
+       div.scrollTop = scrollHeight - div.clientHeight;
+     }
+   }
+
+   function update_progress()
+   {
+    $('#progress').load('../cgi-bin/daqProgress'); 
+   }
+
+   function update_shutter()
+   {
+     $('#shutter_text').load('../cgi-bin/getshutter'); 
+   }
+
+   function lock()
+   {
+     $.get('../cgi-bin/daqstatus', function(data)
+     {
+        if (data.indexOf("1")==-1)
+        {
+          $('#submit_button').removeAttr("disabled"); 
+          $('#submit_button2').removeAttr("disabled"); 
+          $('#submit_button3').removeAttr("disabled"); 
+          $('#status_text').html("<big>Status: READY</big>"); 
+          update_out(); 
+        }
+        else
+        {
+          $('#submit_button').attr('disabled','true'); 
+          $('#submit_button2').attr('disabled','true'); 
+          $('#submit_button3').attr('disabled','true'); 
+          $('#status_text').html("<big>Status: BUSY</big>"); 
+          update_out(); 
+        }
+     });
+     update_shutter(); 
+     update_progress(); 
+   }
+
+	
+   function reset_log()
+   {
+      $.get('../cgi-bin/reset_daq_wait?which=run1m3'); 
+      alert("DAQ Log Update Script Reset... may take a few seconds to activate");
+   }
+
+   function toggle_shutter()
+   {
+    $.get('../cgi-bin/toggleshutter'); 
+    update_shutter(); 
+   }
+
+	</script>
+
+  <link rel="stylesheet" href="styles.css" type="text/css"/>
+
+	</head>
+
+  <body>
+ <div id="all">
+  <img src="gfx/webpageheader.png" alt="DMTPC - Mission Control" />
+  <div id="detname">
+   </div>
+  <div id="menu">
+  </div>
+
+  <div id="main" style="height:1050px" >
+
+    <p align="center" id="status_text"><big>Status: READY</big></p>
+    <p/>
+      <h3 align="center">Run Progress: </h3>
+      <h1 align="center" id="progress"></h1>
+ 
+    <div id="daqcontrol" align="center">
+
+      <form id="ccdinitform" action ="../cgi-bin/rundaq" method="post" style="display: inline;">
+      <input type="hidden" name="what" value="ccdinit">
+      <input type="submit" id="submit_button" value="CCDInit">
+    </form>
+
+    <form id="usbresetform" action ="../cgi-bin/rundaq" method="post" style="display: inline;">
+      <input type="hidden" name="what" value="usbreset">
+      <input type="submit" id="submit_button3" value="USBReset">
+    </form>
+ 
+    <hr/>
+
+    <div id="response" >
+    </div>
+
+    <p><span id="shutter_text"></span> <input type="button" value="toggle" onClick="toggle_shutter()"></p> 
+	  <p id="formp">         
+	  <form id="daqform" action="../cgi-bin/rundaq" method="post">
+      <table>
+        <tr><td style="background-color: inherit">
+          <table border="1" >
+
+            <tr><td>Number of Runs: </td><td><input type="text" name="nruns"></td></tr>
+            <tr><td>Number of Events: </td><td> <input type="text" name="nevents"></td></tr>
+            <tr><td>Exposure Time (ms): </td><td> <input type="text" name="exposure" value="5000"></td></tr>
+            <tr><td>Keyword: </td><td> <input type="text" name="keyword"></td></tr>
+            <tr><td>Location: </td><td> <input type="text" name="location" value="24-037"></td></tr>
+            <tr><td>Comment: </td><td> <textarea rows="10" cols="18" name="comment"></textarea></td><tr>
+
+          </table>
+        </td><td style="background-color: inherit">
+          <table border="1" >
+            <tr><td>Type: </td><td> <select name="what">
+              <option value="normal">Normal Run</option>
+              <option value="dark">Shutter Closed</option>
+            </select>
+            </td></tr>
+            <tr><td>CCD: </td><td> <select name="ccdType">
+              <option value="apogee">ON</option>
+              <option value="dummy">OFF</option>
+            </select>
+            </td></tr>
+            <tr><td>Scope: </td><td> <select name="scopeType">
+              <option value="alazar">ON</option>
+              <option value="dummy">OFF</option>
+            </select>
+            </td></tr>
+
+            <tr><td>Trigger Level:</td><td> <input type="text" name="trigger" value="12" size=3></td></tr>
+            <tr><td>Anode Range (mV):</td><td> <input type="text" name="anode" value="50" size=3></td></tr>
+            <tr><td>Veto Range (mV):</td><td> <input type="text" name="veto" value="50" size=3></td></tr>
+            <tr><td>Mesh Range (mV):</td><td> <input type="text" name="mesh" value="200" size=3></td></tr>
+            <tr><td>PMT Range (mV):</td><td> <input type="text" name="pmt" value="50" size=3></td></tr>
+            <tr><td>Num Bias Frames:</td><td> <input type="text" name="nbias" value="100" size=3></td></tr>
+            <tr><td>Your Email:</td><td> <input type="text" name="email"></td></tr>
+          </table>
+        </td></tr>
+      </table>
+
+      <input type="submit"  id="submit_button2" value="Run"><input type="reset">
+      </p>
+
+    </form>
+  </div>	 
+
+  <div style="float:left;">
+     <br/>
+     <b>Output: </b> <a onClick="reset_log()" href="#">(click here if log doesn't update)</a>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="daq_auto" checked>Autoscroll
+      <br/>
+
+      <div id="daqout" class="log">
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</body></html>
+

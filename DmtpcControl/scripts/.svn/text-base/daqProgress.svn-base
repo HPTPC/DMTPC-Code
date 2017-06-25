@@ -1,0 +1,21 @@
+#! /usr/bin/perl
+
+use DM; 
+use CGI ':standard'; 
+use CGI::Carp qw(fatalsToBrowser); 
+
+print "Content-type:text/html\n\n";
+
+$db = DM->connect() or die ("Could not connect!\n"); 
+
+$sql = "SELECT * FROM run_counter"; 
+$statement = $db->prepare($sql) or die "can't prepare query '$sql': $DBI::errstr\n"; 
+$statement->execute() or die "can't execute query '$sql': $DBI::errstr\n"; 
+$row_ref= $statement->fetchrow_hashref(); 
+print "<span style='color:"; 
+if ($row_ref->{runs_done} == $row_ref->{total_runs})
+{
+  print "red"; 
+}
+else { print "green";}
+print "'> $row_ref->{runs_done} / $row_ref->{total_runs} </span>";

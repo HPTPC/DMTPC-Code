@@ -1,0 +1,17 @@
+verbose = 1 
+ccd_xbin = 4 
+ccd_ybin = 4 
+ccd_exposure = 1000
+ccd_temp = -20   
+ccd_buffer_size = 10
+ccd_nflushes = 1
+#ccd_shutter_always_open = false
+
+tag = m3
+out_dir = out
+
+scope_enabled = false
+
+
+
+

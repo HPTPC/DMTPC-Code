@@ -1,0 +1,20 @@
+# sample of runs when camera was never warmed up
+# runs of the same size, selected every ~8 hours
+# Jan 29,
+m3_gain_R1029034.raw.root ,  1st after cool down 
+m3_gain_R1029035.raw.root ,  
+m3_gain_R1029036.raw.root ,  
+#
+# Feb 3
+m3_gain_R1034039.raw.root ,   1st after cool down 
+m3_gain_R1034040.raw.root ,  
+m3_gain_R1034041.raw.root ,  
+#
+#Feb8/9
+m3_gain_R1039021.raw.root , 
+m3_gain_R1039022.raw.root ,   1st after cool down
+m3_gain_R1039023.raw.root ,  
+#m3_gain_R1040001.raw.root ,  corrupted
+m3_gain_R1040002.raw.root ,  
+m3_gain_R1040003.raw.root ,  
+#

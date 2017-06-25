@@ -1,0 +1,36 @@
+Code for analysing images taken of field cage to study field uniformity
+
+<>field_uniformity: sum the images from source data. uses raw root files.
+
+	 bin/field_uniformity list_of_files.txt savefile.root
+
+list_of_files.txt includes the full path to the file
+
+---Files---
+darco_Cs_137_148kbq.root : new source data with stronger source. uses dmtpc_darc_{5..33}.root
+
+
+---txt files---
+not sure what clean means in the 'clean' txt file.
+
+m3_690V.txt: skimmed m3 690V data, only cam 3 was at stable voltage.
+
+m3_multi_V.txt: added runs at different voltages from list of good runs. runs that didn't pass data quality cuts are excluded (i.e. errant image means/rms)
+
+
+
+
+output: 
+
+>plot_pixel_intensity
+	nomeansub - run on data that has been mean-subtracted
+	>this level: cam3 runs
+	      >cam2: cam2 runs for data and darkdata
+
+>field_uniformity
+	>this level: output for when run on multiple files
+	      >noclust: output for _noclust1 version, run on single run (then hadd)
+	      >this level: cam 3 data
+	      	    >darkdata: cam 3 dark data
+		    >cam2 : subfolder for data and dark data
+

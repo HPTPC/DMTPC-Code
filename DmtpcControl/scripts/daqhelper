@@ -1,0 +1,84 @@
+#!/usr/bin/perl
+
+# This script connects to the DAQ machine and gets the stuff necessary for the DAQ control page
+# Only one session of this script is allowed to run. Enforced by sys::runalone; 
+# script started when ccdinit or run is sent if not already running. scripts stops when root.exe is no longer running. 
+
+# First argument is the command to run 
+# Second argument is the log file to check
+# Optional third argument is image directory to check 
+
+#TODO:
+# make sure not running ccdinit or run via ssh... 
+
+use DM; 
+use Sys::RunAlone; #Enforce single instance
+
+my $nargs = $#ARGV + 1; 
+if ($nargs < 2)
+{
+  die("Need at least two arguments"); 
+}
+my $do_images = ($nargs > 2); 
+
+my $cmd = $ARGV[0]; 
+my $log = $ARGV[1];
+my $images = "/home/dmatter/images/"; 
+if ($do_images){$images = $ARGV[2];}
+
+my $ssh = DM->ssh_connect($DM::DAQ) or die ("Can't get SSH session"); 
+my $tmpdir = "$DM::APACHE_ROOT/$DM::HTMLDIR/tmp"; 
+
+
+# Webpage status
+# runs going
+open(STATUS,"$tmpdir/daq_status"); 
+print STATUS $cmd;   
+close(STATUS); 
+
+my ($pid,$stderr,$exit)= $ssh->cmd("$cmd &; echo \$!"); 
+
+
+LOOP: while(1)
+{
+  sleep(1); 
+  
+  #Grab run log from server
+  my ($stdout, $stderr, $exit) = $ssh->cmd("cat $log"); 
+
+  #save run log locally 
+  open(RUNOUT, "$tmpdir/run.out");
+  print RUNOUT $stdout; 
+  close(RUNOUT); 
+
+  if ($do_images)
+  {
+    #Delete existing images... 
+    system("rm $tmpdir/daq_images/*.png"); 
+
+    #grab images from server
+    opendir(DIR,$images); 
+    @FILES = readdir(DIR); 
+    closedir;
+    foreach $file(sort(@FILES))
+    {
+      #grab image content
+      my ($stdout,$stderr,$exit) = $ssh->cmd("cat $file"); 
+
+      #save image
+      open(IMGOUT, "$tmpdir/daq_images/$file".time()); 
+      print IMGOUT $stdout; 
+      close(IMGOUT); 
+    }
+  }
+
+  #Check pid status... if done, quit
+  my ($stdout, $stderr, $exit) = $ssh->cmd("ps -p $pid"); 
+  if (!$exit) last; 
+
+}
+
+
+
+#delete daq status
+system("rm $tmpdir/daq_status"); 

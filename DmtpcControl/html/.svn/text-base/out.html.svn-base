@@ -1,0 +1,87 @@
+<html>
+	<head>
+	<title> DMTPC - Mission Control </title>
+
+	<script type="text/javascript" src="jquery.min.js"></script>
+	<script>
+	
+	$(document).ready(function()
+	{
+	  var refId = setInterval(function()
+    {
+
+     $('#slowout').load('../cgi-bin/printlog?which=slow');
+     if ($('#slow_auto').attr('checked')) 
+     {
+       var div = $("#slowout")[0]; 
+       var scrollHeight = Math.max(div.scrollHeight, div.clientHeight);
+       div.scrollTop = scrollHeight - div.clientHeight;
+     }
+
+     $('#sparkout').load('../cgi-bin/printlog?which=spark');
+     if ($('#spark_auto').attr('checked'))
+     {
+       var div = $("#sparkout")[0];
+       var scrollHeight = Math.max(div.scrollHeight, div.clientHeight);
+       div.scrollTop = scrollHeight - div.clientHeight;
+     }
+
+     $('#pressout').load('../cgi-bin/printlog?which=press');
+     if ($('#press_auto').attr('checked')) 
+     {
+       var div = $("#pressout")[0]; 
+       var scrollHeight = Math.max(div.scrollHeight, div.clientHeight);
+       div.scrollTop = scrollHeight - div.clientHeight;
+     }
+
+
+    },1000); 
+
+
+    $('#detname').load('../cgi-bin/getdet'); 
+    $('#menu').load('../cgi-bin/makemenu',function(){$('#li_out').addClass("active");});   
+
+
+   }); 
+
+
+	
+	</script>
+
+  <link rel="stylesheet" href="styles.css" type="text/css"/>
+
+	</head>
+
+  <body>
+    <div id="all">
+
+  <img src="gfx/webpageheader.png" alt="DMTPC - Mission Control" />
+  <div id="detname">
+   </div>
+  <div id="menu">
+  </div>
+
+  <div id="main">
+
+    <b>DMSlow output: </b>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="slow_auto" checked>Autoscroll
+    <br/>
+    <div id="slowout" class="log">
+    </div>
+    <br/>
+    <b>Spark monitor output: </b>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="slow_auto" checked>Autoscroll
+    <br/>
+    <div id="sparkout" class="log">
+    </div>
+    <br/>
+    <b>DMPressureControl output:</b>
+     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="press_auto" checked>Autoscroll
+    <br/>
+    <div id="pressout" class="log">
+    </div>
+    
+   </div>
+ </div>
+ </body>
+ <html>

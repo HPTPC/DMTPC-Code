@@ -1,0 +1,209 @@
+<html>
+<head>
+<title> DMTPC - Mission Control </title>
+
+<script src="jquery.min.js"></script>
+<script type="text/javascript" src="jquery.form.min.js"></script>
+
+
+<script>
+
+  var refreshId2;
+  function preload(div_name, url,height,width,clear)
+  { 
+    $img = $('<img />').attr('src',url)
+              .attr("width",height)
+              .attr("height",width) 
+              .load(
+              function()
+              {
+                if(clear){$(div_name).html("");}
+                $(div_name).append($(this)); 
+              }) ;
+    if (clear) $img.attr("onClick","load_img_in_popup(\""+url+"\");");}
+
+
+
+  function load_image(div_name,script_url)
+  {
+    $.ajax({url: script_url, cache: false, 
+            success:  function(url){
+                        
+                       preload(div_name,url,"400","300",true); 
+                       }}); 
+  }
+
+  function calculate_average()
+  { 
+     var form = document.forms['dbplot'];
+     
+     $.get("../cgi-bin/dbavg.py", { name: form.TABLE.value, start_time: form.START_TIME.value, end_time: form.END_TIME.value }, function(data){
+	form.desc.value=data;
+     });
+  }
+
+  function clear_images()
+  {
+    $.get('../cgi-bin/deleteImage.pl?rand='+Math.random());
+  }
+
+  function show_popup()
+  {
+   $('#popup').css("display","block"); 
+   $('#blanket').css("display","block"); 
+   $('#blanket').css("height",$(document).height()+"px"); 
+   $('#popup').center(); 
+   $('#popup').html('<br\><p align="center"> <a href="#" onClick="hide_popup();">[close]</a></p>');
+  }
+
+   function hide_popup()
+  {
+   $('#popup').css("display","none"); 
+   $('#blanket').css("display","none"); 
+
+   $.get('../cgi-bin/deleteImage2.pl?rand='+Math.random());
+  }
+
+  function load_img_in_popup(url)
+  {
+      show_popup(); 
+      preload('#popup',url,"640","480",false);
+  }
+  function load_images()
+  {
+       clear_images(); 
+       load_image('#pressure','../cgi-bin/plotpress?TYPE=lin');
+       load_image('#hvPlot','../cgi-bin/plothv');
+       <!--       load_image('#caenhvPlot','../cgi-bin/plotcaenhv'); -->
+       load_image('#iPlot','../cgi-bin//ploti');
+       load_image('#temp0','../cgi-bin//plotdb?TABLE=temp0&PARAM=value');
+       load_image('#pixyield','../cgi-bin//plotdb?TABLE=ccd&PARAM=avgpixel');
+       load_image('#ccdtemp','../cgi-bin//plotdb?TABLE=ccd&PARAM=temperature');
+  }
+
+  $(document).ready(function()
+  {
+    jQuery.fn.center = function () {
+          this.css("position","absolute");
+          this.css("top", ( $(window).height() - this.height() ) / 2+$(window).scrollTop() + "px");
+          this.css("left", ( $(window).width() - this.width() ) / 2+$(window).scrollLeft() + "px");
+          return this;
+     }
+
+
+    $('#detname').load('../cgi-bin/getdet'); 
+    $('#menu').load('../cgi-bin/makemenu',function(){$('#li_monitoring').addClass("active");});  
+
+   $('#dbplot').ajaxForm({success: function(url)
+    {
+      load_img_in_popup(url); 
+    }});
+
+
+    load_images(); 
+    refreshId2 = setInterval(load_images,8000);
+    $("#stop").click(function()
+    {
+      clearInterval(refreshId2);
+    });
+  });
+</script>
+<link rel="stylesheet" href="styles.css" type="text/css"/>
+</head>
+<body>
+  <div id="all">
+  <img src="gfx/webpageheader.png" alt="DMTPC - Mission Control" />
+  <div id="detname">
+   </div>
+  <div id="menu">
+  </div>
+
+  <div id="main">
+    <div id="blanket" style="display:none">
+   </div>
+  
+   <div id="popup" style="display:none">
+   </div>
+
+<!--  
+<div align="left">
+<button id="stop">Stop</button>
+</div>
+-->
+
+<h2 align="center"> Plots </h2>
+<hr/>
+<div align="center">
+<!--See <a href="../SQL_Structure.html" target="new_"> here </a> for chart of SQL Database.<br-->
+See <a href="../cgi-bin/ShowDbStructure" target="new_"> here </a> for chart of SQL Database.<br>
+</div>
+<br>
+<div align="left">e.g. if you want to plot pressure (measured by the CDG) from 1am to 2pm on March 24th, 2015:<br>
+Table=chamber_pressure_cdg, Parameter=value, Start Time=2015-03-24T01:00:00, End Time=2015-03-24T14:00:00</div>
+<div align="center">
+
+<form id="dbplot" action="../cgi-bin//makePlot.pl">
+<P>
+<table>
+  <tr>
+    <td><label for="TABLE">Table: </label></td>
+    <td><input width="30" type="text" name="TABLE"></td>
+    <td><label for="PARAM">Parameter: </label></td>
+    <td><input type="text" name="PARAM"><td> 
+        <td rowspan="3"><input type="submit" style="height:8em;width:8em;" value="Plot" onClick=calculate_average()></td>
+  </tr>
+  <tr>
+    <td><label for="START_TIME"> Start Time: </label></td>
+    <td><input type="text" name="START_TIME"></td>
+    <td><label for="END_TIME"> End Time: </label></td>
+    <td><input type="text" name="END_TIME"></td>
+  </tr>
+  <tr>
+    <td><label for="MINVAL"> Min: </label></td>
+    <td><input type="text" name="MINVAL"></td>
+    <td><label for="MAXVAL"> Max: </lBabel></td>
+    <td><input type="text" name="MAXVAL"></td>
+  </tr>
+  <tr>
+    <td><label for="AVGVAL"> Average: </label></td>
+    <td><input type="text" name="desc" id="desc" ></td>
+    <td><input type="checkbox" name="PLOTWLINES">Plot with lines<br></td>
+  </tr>
+</table>
+</P>
+</div>
+</form>
+<hr/>
+<table border='0' width='100%' cellpadding='5'>
+<tr>
+<td width='50%' valign='top'>
+<h5>Chamber Pressure</h5><br>
+<div align="center" id="pressure">Pressure plot</div>
+<!-- <h5>Average Pixel Yield</h5><br>
+<div align="center" id="pixyield">Average Pixel</div> -->
+<h5>Anode Voltage</h5><br>
+<div align="center" id="hvPlot">HV Current </div>
+</td>
+<td width='50%' valign='top'>
+<!-- <h5>CCD Temperature</h5><br>
+<div align="center" id="ccdtemp">CCD Temperature</div> -->
+<h5>Ambient Temperature</h5><br>
+<div align="center" id="temp0">Temp0</div>
+<h5>Anode Current</h5><br>
+<div align="center" id="iPlot">HV Voltage </div>
+<!--<h5>HV Voltage (CAEN N1471)</h5><br>
+<div align="center" id="caenhvPlot">HV Voltage (CAEN N1471)</div>-->
+</td>
+</tr>
+</table>
+
+<div>
+<iframe id="fr" width="100%" src = "/cgi-bin/showbiasframes.py" height="1200" >
+</iframe>
+</div>
+
+
+</div></div>
+</body>
+
+</html>

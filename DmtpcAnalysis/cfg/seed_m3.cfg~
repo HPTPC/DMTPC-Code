@@ -1,0 +1,40 @@
+#This is a comment
+
+burnin_num_events = 5
+burnin_distance_thresh = 12
+outlier_factor = 1.25
+
+range_algorithm = 1 
+phi_algorithm = 2
+
+bias_clean_method=median_stack
+#bias_clean_method=traditional
+image_clean_method=median_difference
+
+mc = 0 
+nokill = 0
+
+sat_thresh = 55000
+n_sat_thresh = 4
+
+nbaseline = 25
+nblur = 1
+
+
+cluster_find_algo = seed
+cluster_min_size = 16
+cluster_find_seed_blur_radius = 4 
+blur_amount = 2 
+cluster_find_seed_thresh_ring_ratio = 0.75
+cluster_find_seed_max_wrong_prob = 1e-33
+cluster_find_seed_min_threshold = 0.75
+cluster_find_seed_seed_threshold = 5.2
+cluster_neighbors_threshold_for_filling = 4
+cluster_min_neighbors_to_keep_pixel = 2
+cluster_join_min_rxy_cluster = 0.8 
+cluster_join_min_rxy_global = 0.65
+cluster_join_max_join_residual = 5 
+cluster_join_least_squares_weight = 2
+cluster_min_dist = 3600
+cluster_red_threshold = 2.8
+overscan = 0

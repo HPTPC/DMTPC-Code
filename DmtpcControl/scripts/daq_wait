@@ -1,0 +1,69 @@
+#!/usr/bin/perl
+
+
+use DM; 
+$what = $ARGV[0]; 
+
+print "what = $what\n";
+$do_images = 0; 
+
+my $tmpdir = "$DM::APACHE_ROOT/$DM::HTMLDIR/tmp"; 
+`echo "Running $what..." > $tmpdir/daq.out`;
+sleep(1); 
+while (not $ssh = DM->ssh_connect($DM::DAQ)){;}
+my $pidfinder = "ps ux | awk '/\.\\/".$what."/ && !/awk/ {print \$2}'";
+print $pidfinder;
+sleep(1); 
+($pid,$stderr,$exit) = $ssh->cmd($pidfinder);
+
+$pid = (split /\n/,$pid)[0];
+
+print "\npid is $pid\n"; 
+
+if ($do_images)
+{
+  #Delete existing images... 
+  # print "Deleting old images";;
+  system("rm $tmpdir/daq_images/*.png"); 
+}
+
+$exit = 0; 
+#close STDIN;
+#close STDOUT;
+#close STDERR;
+while($exit==0)
+{
+
+  #Check pid status... if done, quit
+  ($stdout, $stderr, $exit) = $ssh->cmd("kill -0 $pid"); 
+  #Grab run log from server
+  my ($stdout, $stderr, $exit) = $ssh->cmd("cat $DM::DAQ_WORK_DIR/$what.log"); 
+  #print $stdout; 
+  #save run log locally 
+  open(RUNOUT,">", "$tmpdir/daq.out");
+  print RUNOUT $stdout; 
+  close(RUNOUT); 
+
+  if ($do_images)
+  {
+    #grab images from server
+    opendir(DIR,$images); 
+    @FILES = readdir(DIR); 
+    closedir(DIR);
+    foreach $file(sort(@FILES))
+    {
+      #grab image content
+      my ($stdout,$stderr,$exit) = $ssh->cmd("cat $file"); 
+
+      #save image
+      open(IMGOUT, "$tmpdir/daq_images/$file".time()); 
+      print IMGOUT $stdout; 
+      close(IMGOUT); 
+    }
+  }
+
+  if ($pid eq "" or $exit!=0){ last; }
+  sleep(2); 
+}
+
+

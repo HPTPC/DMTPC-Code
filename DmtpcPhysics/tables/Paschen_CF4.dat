@@ -1,0 +1,23 @@
+# column 1= P*d (Torr*cm, P=pressure, d=plate separation)
+# column 2= breakdown voltage (Volts)
+# data was taken from:  
+# Low-pressure breakdown and voltage-current characteristics of dc discharge in CF4
+#N. Skoro, G. Malovic, UD. Maric and Z. Lj. Petrovic
+# 28th ICPIG, July 15-20, 2007, Prague, Czech Republic
+0.11274	750.965	
+0.13153	655.788	
+0.15241	594.695	
+0.18720	531.029	
+0.21991	500.161	
+0.27384	485.37	
+0.32950	485.37	
+0.38311	484.727	
+0.43939	484.727	
+0.54526	500.161	
+0.65609	515.595	
+0.76547	530.386	
+0.87491	547.749	
+1.09693	594.051	
+1.20738	610.129	
+1.31537	609.486	
+1.41351	641.64	

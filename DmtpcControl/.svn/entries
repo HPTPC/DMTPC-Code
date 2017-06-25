@@ -1,0 +1,86 @@
+10
+
+dir
+673
+svn+ssh://gmuraru@noether.lns.mit.edu/net/zwicky/dmtpc/repository/dmtpc-svn/trunk/DmtpcControl
+svn+ssh://gmuraru@noether.lns.mit.edu/net/zwicky/dmtpc/repository/dmtpc-svn
+
+
+
+2016-03-28T16:14:54.008887Z
+661
+leyton
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1245a8b3-7db6-43b9-8489-6f02f965fcc1
+
+tools
+dir
+
+include
+dir
+
+html
+dir
+
+daq
+dir
+
+scripts
+dir
+
+src
+dir
+
+driver
+dir
+
+canary
+dir
+
+Makefile
+file
+
+
+
+
+2015-10-16T14:00:15.000000Z
+ec21039cc6201322acf0499c6153f159
+2015-05-12T22:21:05.385575Z
+366
+leyton
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1486
+

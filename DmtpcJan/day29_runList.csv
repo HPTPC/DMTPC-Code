@@ -1,0 +1,38 @@
+# day 29 = NO AmBe 
+# camSrc=0 camId=2 SN=PL0261514   temp/C=-29.0
+# camSrc=1 camId=3 SN=PL0544710   temp/C=-29.0
+# mesh voltage off, shutter closed, 10 bias, 200 exposures, chamber evacuated
+# only 2 cameras were read out
+# cam0 = BR, cam1 = BL, 2x2 binning, -29 C
+# Runs 1029005-1029030, Fe-55 (x4), no AmBe source
+#
+#run No,  frame count, sec/frame,rawBin, C-temp, cam0 HV, cam1 HV, cam2 HV, cam3 HV, remark
+1029005, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029006, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029007, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029008, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029009, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029010, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029011, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029012, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029013, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029014, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029015, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029016, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029017, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029018, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029019, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029020, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029021, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029022, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029023, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+#1029025, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source, hot e.g. cam2 frame 103
+1029026, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029027, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029028, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029029, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source  
+1029030, 200, 2, -29, 2x2, 0, 0, 0, 0, NO AmBe source 
+# 
+
+
+

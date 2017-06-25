@@ -1,0 +1,32 @@
+MCAmp is designed to simulate DMTPC amplification regions, although
+it can probably be used more generally for e.g. drifting and stuff. 
+
+
+It depends on: 
+
+ -gmsh + included dmtpc_gmsh.patch (patch is against recent svn version e.g.  17317) 
+
+ To apply the patch, cd into the gmsh directory and 
+
+  patch -p0 < /path/to/dmtpc_gmsh.patch
+
+  then compile as usual. 
+
+ -elmerfem (calls ElmerGrid and ElmerSolver) 
+ -garfieldpp (GARFIELD_HOME is expected to be defined appropriately) 
+    apply the patch if you want conductors 
+ -ROOT 
+
+
+See the models directory for some examples. 
+
+
+
+
+ 
+
+  
+  
+ 
+
+

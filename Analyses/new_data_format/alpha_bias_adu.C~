@@ -1,0 +1,97 @@
+int cam=3; // BL quadrant
+
+TCanvas* c;                             
+unsigned int ev_counter;
+unsigned int bias_counter;
+
+void sum(TH2D* sum, int run=5002, unsigned int& counter)
+{
+  dmtpc::core::Dataset *d = new dmtpc::core::Dataset;
+  TString filename = TString::Format("/scratch3/darkmatter/dmtpc/data/m3/2016/03/raw/m3_neutron_R%d.raw.root",run);
+  //if (run>=1032000) file="../../02/raw/"+filename;
+  d->open(filename);
+
+  for (int i=0; i<d->nevents();i++){
+    d->getEvent(i);
+    TH2I* myImage = d->event()->getImage(cam)->getVisible();
+    sum->Add(myImage);
+    counter++;
+  }
+}
+
+
+void alpha_bias_adu()
+{
+  gSystem->Load("$DMTPC_HOME/DmtpcCore/lib/libDmtpcCore.so");
+  ev_counter=0;
+  bias_counter=0;
+
+  // open a data file just to get histo clones                                                                                          
+  dmtpc::core::Dataset *d = new dmtpc::core::Dataset;
+  d->open("/scratch3/darkmatter/dmtpc/data/m3/2016/03/raw/m3_neutron_R1065001.raw.root");
+  d->getEvent(0);
+  TH2I* myImage = d->event()->getImage(cam)->getVisible();
+  TH2D* sumImage = (TH2D*)myImage->Clone("sumImage");
+  sumImage->Reset();
+  TH2D* biasImage = (TH2D*)myImage->Clone("biasImage");
+  biasImage->Reset();
+
+  //define cut region
+  TCutG *alpharegion = new TCutG("alpharegion",5);
+  alpharegion->SetVarX("");
+  alpharegion->SetVarY("");
+  //alpharegion->SetTitle("Graph");                                                                                 
+  alpharegion->SetPoint(0, 850, 2850);
+  alpharegion->SetPoint(1, 1200, 3000);
+  alpharegion->SetPoint(2, 1800, 1600);
+  alpharegion->SetPoint(3, 1400, 1300);
+  alpharegion->SetPoint(4, 850, 2850);
+
+  alpharegion->SetLineColor(kRed);
+  alpharegion->SetLineWidth(2);
+
+  // voltage-off, shutter closed                                                                                                        
+  for (int b=1065001; b<=1065001; b++) sum(biasImage,b,bias_counter);
+  // average                                                                                                                 
+  
+  //sumImage->Scale(1./(double)ev_counter);
+  biasImage->Scale(1./(double)bias_counter);
+  Int_t i,j;
+  Int_t nx = biasImage->GetNbinsX();
+  Int_t ny = biasImage->GetNbinsY();
+  Double_t area = 0;
+  Double_t xc,yc;
+
+  for (i=0; i<=nx; i++) {
+    for (j=0; j<=ny; j++) {
+      xc = biasImage->GetXaxis()->GetBinCenter(i);
+      //      cout << xc << endl;
+      yc = biasImage->GetYaxis()->GetBinCenter(j);
+      // cout << yc << endl;
+      if (alpharegion->IsInside(xc, yc)) {
+	area = area + biasImage->GetXaxis()->GetBinWidth(i)*
+	  biasImage->GetYaxis()->GetBinWidth(j);
+      }
+    }
+  }
+
+  Double_t cut_ADU = alpharegion->IntegralHist(biasImage);
+  cout << "ADU count = " << cut_ADU << endl;
+  printf("Area defined by alpharegion = %d\n",area);
+  //biasImage->Draw(Form("[%s]", alpharegion->GetName()));
+  alpharegion->Draw("alp, same");
+  biasImage->Draw("colz [alpharegion]");
+  
+  // int bin = sumImage->FindBin(1500,1500);
+  // cout << "sumImage bin = " << sumImage->GetBinContent(bin) << endl;
+  cout << "total summed events = " << ev_counter << endl;
+  cout << "ADU = " << biasImage->Integral()/594441 << endl;
+  //cout << "biasImage bin = " << biasImage->GetBinContent(bin) << endl;
+  cout << "total summed bias = " << bias_counter << endl;
+
+  TFile *file=new TFile("alpha_bias_adu.root","recreate");
+  //sumImage->Write();
+  biasImage->Write();
+  file->Close();
+}
+

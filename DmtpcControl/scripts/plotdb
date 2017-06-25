@@ -1,0 +1,91 @@
+#!/usr/bin/perl
+
+use DM;
+use GetTime;
+use CGI ':standard';
+use CGI::Carp qw(fatalsToBrowser);
+use Chart::Graph::Gnuplot qw(&gnuplot);
+
+$|=1;
+
+$Chart::Graph::Gnuplot::gnuplot  = "/usr/bin/gnuplot";
+$Chart::Graph::Gnuplot::ppmtogif = "/usr/bin/ppmtogif";
+
+
+print "Content-type:text/html\n\n";
+
+
+my $WhichParam = param("PARAM") or die "No parameter defined!";
+
+my $WhichTable = param("TABLE") or die "No table defined!";
+
+$db_handle = DM->connect
+    or die("Could not connect! \n");
+
+$tmpdir="$DM::APACHE_ROOT/$DM::HTMLDIR/tmp";
+$url="/tmp";
+
+
+my @pdata;
+my @tsdata;
+
+my $minTime = GetTime->getTime(6);
+
+$sql = "SELECT * FROM $WhichTable WHERE timestamp>'$minTime' ORDER BY timestamp ASC";
+$statement = $db_handle->prepare($sql) or die "Couldn't prepare query '$sql': $DBI::errstr\n";
+$statement->execute() or die "Couldn't execute query '$sql': $DBI::errstr\n";
+while ($row_ref = $statement->fetchrow_hashref())
+{
+  push( @tsdata,   $row_ref->{timestamp});
+  push( @pdata,    $row_ref->{$WhichParam});
+}
+
+my $count = @pdata;
+if ($count > 0){
+$ave = 0;
+$valsq = 0;
+@sorted = sort {$a<=>$b}@pdata;
+# print "@sorted";
+my $median;
+if ($count % 2 == 0){
+$median = ($sorted[$count/2]+$sorted[$count/2-1])/2;
+}else{
+ $median = $sorted[($count-1)/2];
+}
+for ($i=0; $i<$count; $i++){
+  $ave = $ave+$pdata[$i];
+  $valsq= $valsq+$pdata[$i]*$pdata[$i];
+}
+$ave = $ave/$count;
+$valsq = $valsq/$count;
+$stddev = sqrt($valsq-$ave^2);
+#print "AVERAGE: $ave, MEDIAN: $median, STDDEV: $stddev";
+for ($i=1; $i<$count-1; $i++){
+  if (abs($pdata[$i]-$median)>10*$stddev){
+    #   print "$i: $pdata[$i]";
+    delete $pdata[$i];
+    delete $tsdata[$i];
+  }
+
+}
+
+my $imageName= "$WhichParam";
+$imageName  .= "_in_";
+$imageName  .= "$WhichTable$id";
+#$imageName  .= time(); 
+gnuplot({"title"=>"$WhichTable Chart", "output file"=>"$tmpdir/$imageName.gif", "output type"=>"gif",
+	 "x-axis label"=>"Time Stamp", "y-axis label"=>"$WhichParam",
+	 "xdata"=>"time", "timefmt"=>"%Y-%m-%d %H:%M:%S",
+	 "extra_opts"=>join("\n","set grid")  },
+	 [{"title"=>"$WhichParam of $WhichTable", "style"=>"linespoints", "type"=>"columns", "using"=>"1:3"}, \@tsdata,\@pdata]
+       );
+
+print "$url/$imageName.gif"
+
+}else{
+print "gfx/norecent.png";
+}
+
+$db_handle->disconnect();
+
+

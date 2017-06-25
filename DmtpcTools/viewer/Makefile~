@@ -1,0 +1,62 @@
+FFT_SUPPORT=yes
+#FFT_SUPPORT=$(shell root-config --has-fftw3)
+
+#C=g++
+CXXFLAGS=-O3 -g -fPIC `root-config --cflags` -Wall -Wextra `dmtpc-config --inc-analysis --inc-core --inc-image --inc-waveform` 
+LFLAGS=`root-config --glibs` `dmtpc-config --lib-image --lib-analysis --lib-core --lib-waveform` 
+
+#CXX=g++
+VPATH=src:include:build
+LIBDIR=lib
+BUILDDIR=build
+INCLUDEDIR=include
+BINDIR=bin
+
+OBJS := $(addprefix $(BUILDDIR)/, \
+		ViewerFrame.o ViewerImageTransform.o ViewerProjection.o ViewerStyle.o DmtpcViewerCint.o\
+)
+
+
+
+
+BINARIES := $(addprefix $(BINDIR)/, DmtpcViewer); 
+
+INCLUDES := $(addprefix $(INCLUDEDIR)/, $(shell ls $(INCLUDEDIR)))
+
+
+all: $(LIBDIR)/libDmtpcViewer.so $(BINARIES) 
+
+$(LIBDIR)/libDmtpcViewer.so: $(OBJS) $(LIBDIR)
+	@echo Building shared library $@
+	@$(CXX) $(LDFLAGS) $(OBJS) -shared -o $@
+
+
+$(OBJS): | $(BUILDDIR)
+
+$(BUILDDIR): 
+	mkdir -p $(BUILDDIR)
+
+$(BINDIR): 
+	mkdir -p $(BINDIR)
+
+$(LIBDIR): 
+	mkdir -p $(LIBDIR)
+
+
+$(BUILDDIR)/%.o: %.cc $(INCLUDES) Makefile | $(BUILDDIR)
+	@echo Compiling  $< 
+	@$(CXX) $(CXXFLAGS) -I./include -I./ -o $@ -c $< 
+
+$(BINDIR)/DmtpcViewer: $(BUILDDIR)/DmtpcViewer.o $(INCLUDES) $(OBJS) Makefile | $(BINDIR)
+	@echo Compiling $<
+	@$(CXX)  -o $@  $(LFLAGS) $< $(OBJS)
+
+$(BUILDDIR)/DmtpcViewerCint.cc: $(INCLUDES) LinkDef.h | $(BUILDDIR)
+	@echo Running rootcint
+	@rootcint  -f $(BUILDDIR)/DmtpcViewerCint.cc  -c $(CXXFLAGS) $(INCLUDES) LinkDef.h
+
+
+clean: 
+	rm -r build
+	rm -r bin
+	rm -r lib

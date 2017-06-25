@@ -1,0 +1,40 @@
+#!/usr/bin/perl
+
+use DM;
+
+use CGI ':standard';
+use CGI::Carp qw(fatalsToBrowser);
+
+$|=1;  # MAL: really need this?
+
+print "Content-type:text/html\n\n";
+
+my $Action = param("action") or die "No parameter defined!";
+
+#  check that DMPressureControl is running
+@ARGV = ("ps -A | grep DMPressureContr |");
+$nRunning=0;
+while(<>) {
+  $nRunning++;
+}
+if ($n<1) {
+  $ENV{'LD_LIBRARY_PATH'} = "/usr/local/cern/root/lib:/usr/local/lib"; # MAL: really need this?
+  $ENV{'ROOTSYS'} = "/usr/local/cern/root";  # MAL: really need this?
+  $ENV{'MCCHANNELCFGS'} = "/var/www/html/channels/$DM::DETECTOR";  # MAL: really need this?
+
+  if ($Action eq "refill") {
+      system("nohup $DM::APACHE_ROOT/cgi-bin/DMPressureControl > $DM::APACHE_ROOT/$DM::HTMLDIR/tmp/presscontrol.out 2>&1 &");
+  }
+  if ($Action eq "adjust") {
+      system("nohup $DM::APACHE_ROOT/cgi-bin/DMPressureControl adjust > $DM::APACHE_ROOT/$DM::HTMLDIR/tmp/presscontrol.out 2>&1 &");
+  }
+}
+print "setpress: nproc=$nRunning";
+
+#print <<EOF;
+#<META HTTP-EQUIV="Refresh"  CONTENT="0;
+#URL=http://18.146.0.111">
+#EOF
+
+
+

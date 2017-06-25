@@ -1,0 +1,37 @@
+#!/usr/bin/perl 
+
+use warnings;
+use DM;
+
+$db_handle = DM->connect
+    or die("Could not connect! \n");
+
+@control_params = qw(caen_brd1_ch0 caen_brd1_ch1 caen_brd1_ch2 caen_brd1_ch3);
+@control_titles = ("Anode 4sh-TL", "Anode 4sh-TR", "Anode 4sh-BR", "Anode 4sh-BL");
+
+
+my $count=0;
+
+foreach $param (@control_params) {
+
+   print "Candidate sparks for " . $control_titles[$count] . ":\n";
+   #Query database for largest               
+   $read_curr = $param . "_i";
+   $sql = "select * from " . $read_curr . " ORDER BY timestamp DESC LIMIT 10000";
+   $statement = $db_handle->prepare($sql)
+       or die "Couldn't prepare query '$sql': $DBI::errstr\n";
+   $statement->execute()
+       or die "Couldn't execute query '$sql': $DBI::errstr\n";
+
+   while (@results = $statement->fetchrow()) {
+       if ($results[0] > 1.0) { print $results[0] . ", " . $results[1] . "\n"; }
+   }
+
+   #$curr_row_ref = $statement->fetchrow_hashref();
+
+   #print $curr_row_ref->{value};
+   $count++;
+}
+
+$statement->finish();
+$db_handle->disconnect();

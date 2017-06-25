@@ -1,0 +1,182 @@
+#include <mysql/mysql.h>
+#include <sqlite3.h>
+
+#include <iostream>
+#include <string>
+#include <fstream>
+
+#include <TString.h>
+#include <TSystem.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TTimeStamp.h>
+
+#include "db_connect.hh"
+
+#include <cstdlib>
+#include <sstream>
+#include <vector>
+
+//callback function for sqlite3
+static int callback(void * notUsed, int argc, char ** argv, char ** azColName){
+  int i;
+  for(i=0; i < argc; i++){
+    printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+  }
+  printf("\n");
+  return 0;
+}
+
+int main(int argc, char ** argv){
+
+  bool verbose = true;
+
+  //argv[1] = list_of_runs.txt
+  //argv[2] = exposure time
+  //argv[3] = save name
+
+  //minimum current to classify as spark (to account for leakage current)
+  double min_current = 0;//database only registering 10s of mA
+
+  //read in run numbers
+  std::cout<<"reading in runs"<<std::endl;
+  std::ifstream run_file(argv[1]);
+  std::vector<TString> run_nums;
+  std::string line;
+  if(run_file.is_open()){
+    while(getline(run_file,line)){
+      run_nums.push_back(line);
+    }
+  }
+  //exposure
+  //  int exp = atoi(argv[2]);//s
+  //output for sqlite
+  TString sqlite_file = argv[2];
+
+  //-------------------set up sql db access--------------
+  db_access slow_access, run_access;
+  char * slow_server = "m3slow.lns.mit.edu";
+  char * slow_user = "dmatter";
+  char * slow_pass = "";
+  //TEST - control info
+  slow_access.server = slow_server;
+  slow_access.user = slow_user;
+  slow_access.pass = slow_pass;
+  slow_access.database = "DMTPC_TEST";
+  //onlM3 - run info
+  run_access.server = slow_server;
+  run_access.user = slow_user;
+  run_access.pass = slow_pass;
+  run_access.database = "onlM3";
+  
+  //connect to databases
+  std::cout<<"connecting to databases"<<std::endl;
+  MYSQL * slow_db = initialiseDB(slow_access);
+  std::cout<<"slow db connected"<<std::endl;
+  MYSQL * run_db = initialiseDB(run_access);
+  std::cout<<"run db connected"<<std::endl;
+
+  //current channels for the power supply
+  const int nchan = 4;//modify for adding 1sh channels
+  TString A4shtli = "caen_brd1_ch0_i";
+  TString A4shtri = "caen_brd1_ch1_i";
+  TString A4shbri = "caen_brd1_ch2_i";
+  TString A4shbli = "caen_brd1_ch3_i";
+
+  TString channel[nchan] = {A4shtli,A4shtri,A4shbri,A4shbli};
+
+  //  TString runStartInit = "SELECT unix_timestamp(timestamp) from run_start WHERE runId == ";
+  //  TString timeCondition = " WHERE unix_timestamp(timestamp) > " + minTime + " && unix_timestamp(timestamp) < " + maxTime;
+
+  //storing values
+  //std::vector<int> run_start;
+
+  //------------create sqlite3 database----------
+  sqlite3 * db;
+  int rc;
+  rc = sqlite3_open(sqlite_file, &db);
+
+  //test
+  if(rc){
+    std::cerr<<"Can't open SQLite database!"<<std::endl;
+    return -1;
+  }
+  else{
+    std::cout<<"SQLite Database opened"<<std::endl;
+  }
+
+  //create sql statement to generate table
+  TString cmd = TString("CREATE TABLE SPARKS(run_id INT NOT NULL, channel INT NOT NULL, run_start TIMESTAMP NOT NULL, run_end TIMESTAMP NOT NULL, timestamp TIMESTAMP NOT NULL, current REAL NOT NULL);");
+
+  std::cout<<"sqlite table cmd: "<<cmd<<std::endl;
+
+  //if deducing spark duration rather than individual current draws
+  //                        t_start TIMESTAMP NOT NULL,		\
+  //                        t_end TIMESTAMP NOT NULL,		\
+  //                        i_start REAL NOT NULL,		\
+  //                        i_end REAL NOT NULL\");");
+
+
+  char *zErrMsg = 0;
+  //create the sqlite table
+  rc = sqlite3_exec(db,cmd,callback,0,&zErrMsg);
+  if(rc != SQLITE_OK){
+    fprintf(stderr, "SQL Error %s:\n", zErrMsg);
+    sqlite3_free(zErrMsg);
+  }
+  else{
+    fprintf(stdout, "Table created successfully\n");
+  }
+
+
+  //----------get the values from mysql databases---------
+  std::cout<<"querying databases"<<std::endl;
+  for(int run = 0; run < run_nums.size(); run++){
+    //    std::cout<<"run: "<<run_nums.at(run)<<std::endl;
+    //get run start timestamp
+    TString runCondition = "runId = " + run_nums.at(run);
+    //    std::cout<<"condition: "<<runCondition<<std::endl;
+    int run_start = (int)getValue(run_db,"run_start","unix_timestamp(timestamp)",runCondition);
+    //    std::cout<<"run: "<<run_nums.at(run)<<" time: "<<TTimeStamp::TTimeStamp(run_start)<<std::endl;
+    int run_end = (int)getValue(run_db,"run_end","unix_timestamp(timestamp)",runCondition);
+    //setup time and valuecondition
+    TString timeCondition = Form("unix_timestamp(timestamp) > %d && unix_timestamp(timestamp) < %d ",run_start,run_end);
+    TString valueCondition = Form("value > %f ",min_current);
+    TString timeValueCondition = timeCondition + " && " + valueCondition;
+    std::cout<<"timeValueCondition: "<<timeValueCondition<<std::endl;
+    std::vector<int> tstamps;
+    //---loop over current entries for run period
+    //    for(int t = run_start; t <= run_end; t++){
+    //--loop over channels
+    for(int ch = 3; ch < nchan; ch++){
+      std::vector<double> currents = getValues(slow_db,channel[ch],"value",timeValueCondition,true,tstamps);
+      //--insert entries into sqlite database
+      for(int i = 0; i < currents.size(); i++){
+	//storage command
+	TString store_cmd = "INSERT INTO SPARKS (run_id, channel, run_start, run_end, timestamp, current) ";
+	store_cmd += Form("VALUES (%d, %d, %d, %d, %d, %f); ", run_nums.at(run).Atoi(), ch, run_start, run_end, tstamps.at(i), currents.at(i));
+	//store the values
+	rc = sqlite3_exec(db,store_cmd,callback,0,&zErrMsg);
+	if(rc != SQLITE_OK){
+	  fprintf(stderr, "SQL Error %s:\n", zErrMsg);
+	  sqlite3_free(zErrMsg);
+	}
+	else{
+	  if(verbose)
+	    fprintf(stdout, "Value stored successfully\n");
+	}
+	
+      }
+    }
+  }
+
+
+  std::cout<<"completed"<<std::endl;
+  
+
+  //close the database connections
+  mysql_close(slow_db);
+  mysql_close(run_db);
+  sqlite3_close(db);  
+
+}

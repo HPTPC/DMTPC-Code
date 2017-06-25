@@ -1,0 +1,26 @@
+#!/usr/bin/perl
+
+use CGI ':standard';
+use CGI::Carp qw(fatalsToBrowser);
+print "Content-type:text/html\n\n";
+
+my $which = param("which"); 
+
+print("<pre>"); 
+if ($which eq "slow")
+{
+  exec("tail -c 200000 ../html/tmp/slow.out");
+}
+elsif ($which eq "spark")
+{
+  exec("tail -c 200000 ../html/tmp/sparkMonitor.out");
+}
+elsif ($which eq "press")
+{
+  exec("tail -c 200000 ../html/tmp/presscontrol.out"); 
+}
+elsif ($which eq "daq")
+{
+  exec("ansifilter --html ../html/tmp/daq.out | tail -c 20000");
+}
+print("</pre>"); 

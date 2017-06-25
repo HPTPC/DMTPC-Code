@@ -1,0 +1,11 @@
+Higher level C labjack interface
+
+Written by Cosmin Deaconu <cozzyd@mit.edu>
+
+Implemented so far: 
+
+  checksums
+  feedback 
+  configio (for u3) 
+
+See test for example program 

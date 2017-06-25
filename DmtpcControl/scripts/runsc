@@ -1,0 +1,35 @@
+#!/usr/bin/perl
+
+use CGI ':standard';
+use CGI::Carp qw(fatalsToBrowser);
+use DM; 
+
+print  header(), start_html(-title => "Dark Matter Slow Control", -BGCOLOR=>"White");
+
+
+if (!param("action")) {
+  die "Unknown command \n";
+}
+
+my $action = param("action");
+
+if ($action eq "start") {
+  $ENV{'LD_LIBRARY_PATH'} = "/usr/local/cern/root/lib:/usr/local/lib";
+  $ENV{'ROOTSYS'} = "/usr/local/cern/root";
+  $ENV{'MCCHANNELCFGS'} = "/var/www/html/channels/$DM::DETECTOR";
+  system("nohup $DM::APACHE_ROOT/cgi-bin/DMSlow > $DM::APACHE_ROOT/$DM::HTMLDIR/tmp/slow.out 2>&1 &");
+}
+
+if ($action eq "stop") {
+  @ARGV = ("ps -A | grep DMSlow |");
+  while (<>) {
+    $line = $_;
+    #print $line;
+    @numbers = $line =~ m/(\d+)/g;
+    $killCommand = "kill -9 $numbers[0]";
+    #print "$killCommand \n";
+    system($killCommand);
+  }
+}
+
+

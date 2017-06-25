@@ -1,0 +1,246 @@
+#!/usr/bin/perl
+
+use DM;
+
+use CGI qw(:standard *table);
+use CGI::Carp qw(fatalsToBrowser);
+
+$|=1;
+
+$db_handle = DM->connect
+	or die("Could not connect! \n");
+
+
+my %States = (
+	      "List" => \&list_runs,
+	      "Edit" => \&edit_run,
+	      "Update" => \&update_run,
+	      "Add" => \&add_run,
+	      "Insert" => \&insert_run
+	     );
+
+
+my $CurrentPage = param("ITEM") || "List";
+die "No page found!" unless $States{$CurrentPage};
+
+
+
+print "Content-type:text/html\n\n";
+
+while (my ($page, $function)= each %States ) {
+  $function->($page eq $CurrentPage);
+}
+
+$db_handle->disconnect();
+
+exit;
+
+
+
+sub list_runs() {
+
+  my $active = shift;
+  return unless($active);
+
+  $sql = "SELECT * FROM run_desc";
+
+  my $keyword=param("KEYWORD");
+
+  my $detids=param("detids"); 
+
+  if ($detids or $keyword)
+  {
+    $sql .= " WHERE" ;
+  }
+
+  if ($detids)
+  {
+    $sql .="("; 
+    my @tokens = (split('\|',$detids));
+    my $size = @tokens;;
+    for (my $i=0; $i < $size ; $i++)
+    {
+      if ($i >0) {$sql.= " OR"; }
+      $detid = @tokens[$i]; 
+      if ($detid eq "unspec") {$detid=""; }
+      $sql .= " detid='$detid'"; 
+    }
+    $sql .=")"; 
+  }
+
+  if ($keyword) {
+    if ($detids) {$sql.= " AND"; }
+    $sql .= " keyword='$keyword'";
+  }
+  $sql .= " ORDER BY timestamp DESC";
+
+
+  my $limit=param("LIMIT");
+  if ($limit) {
+    $sql .= " LIMIT $limit";
+  }
+
+  # print "<b>$sql</b>"; 
+
+  $statement = $db_handle->prepare($sql)
+    or die "Couldn't prepare query '$sql': $DBI::errstr\n";
+
+  $statement->execute()
+    or die "Couldn't execute query '$sql': $DBI::errstr\n";
+
+  print table({-align=>"center", -valign=>"center",-width=>"90%"});
+  print Tr( {-bgcolor=>"#CC99CC",-align=>"center"}, 
+                td("File"), td("Keyword"), td("Location"), td("Time Stamp"), td("Description")
+             );
+
+  while ($row_ref = $statement->fetchrow_hashref()) {
+    print Tr( td( "<a href=lsruns?ITEM=Edit&runID=$row_ref->{id} > $row_ref->{file} </a>"),
+	      td({-align=>"right"}, $row_ref->{keyword}), td($row_ref->{location}),
+	      td($row_ref->{timestamp}), td($row_ref->{description}) );
+  }
+  print start_form();
+  print table({-width=>"80%"});
+  print Tr( td(submit(-name=>"AddButton", -value=>"Add Run")),  td() );
+  print hidden(-name=>"ITEM",  -value=>"Add", -override=>1);
+  print end_form();
+}
+
+
+
+sub edit_run() {
+  my $active = shift;
+  return unless($active);
+
+  my $id = param("runID")
+    or die "Run ID not specified";
+
+  $sql = "SELECT * FROM run_desc WHERE id=$id";
+  $statement = $db_handle->prepare($sql)
+    or die "Couldn't prepare query '$sql': $DBI::errstr\n";
+
+  $statement->execute()
+    or die "Couldn't execute query '$sql': $DBI::errstr\n";
+
+  $row_ref = $statement->fetchrow_hashref()
+  or die "Cannot find run with id=$id\n";
+
+  print start_form();
+  print table({-width=>"80%"});
+  print Tr(td("Entry id:"),   td("$id"));
+  print Tr(td("File Name:"),  td(textfield(-name=>"FileName",   -value=>$row_ref->{file},       -size=>60)) );
+  print Tr(td("Keyword:"),    td(textfield(-name=>"Keyword",    -value=>$row_ref->{keyword},    -size=>60)) );
+  print Tr(td("Location:"),   td(textfield(-name=>"Location",   -value=>$row_ref->{location},   -size=>60)) );
+  print Tr(td("Time Stamp:"), td(textfield(-name=>"TimeStamp",  -value=>$row_ref->{timestamp},  -size=>60)) );
+  print Tr(td("Description:"),td(textarea (-name=>"Description",-value=>$row_ref->{description},-columns=>50,-rows=>"10")) );
+  print Tr(td("Detector Id:"),td(textfield (-name=>"Detid",-value=>$row_ref->{detId},-rsize=>"10")) );
+  print Tr( td(submit(-name=>"SubButton", -value=>"Update")),
+	    td(submit(-name=>"DelButtonConfirm", -value=>"Delete")) );
+  print hidden(-name=>"runID", -value=>$id );
+  print hidden(-name=>"ITEM",  -value=>"Update", -override=>1);
+  print end_form();
+}
+
+
+
+sub confirm_delete() {
+  my $id=param("runID");
+  print "Confirm deleting run?";
+  print start_form();
+  print table({-width=>"80%"});
+  print Tr( td(submit(-name=>"DelButton", -value=>"Delete")),
+	    td(submit(-name=>"CancelButton", -value=>"Cancel")) );
+  print hidden(-name=>"ITEM",  -value=>"Update", -override=>1);
+  print hidden(-name=>"runID", -value=>$id );
+  print end_form();
+}
+
+
+sub update_run() {
+  my $active = shift;
+  return unless($active);
+
+  my $id=param("runID");
+  my $file=param("FileName");
+  my $keyword=param("Keyword");
+  my $description=param("Description");
+  my $detid=param("Detid");
+  my $timestamp=param("TimeStamp");
+  my $location=param("Location");
+  my $subbutton=param("SubButton") ? 1 : 0;
+  my $sql = "";
+  if (param("SubButton")) {
+    $sql .="UPDATE run_desc SET";
+    $sql .= " file='$file',keyword='$keyword',description='$description',timestamp='$timestamp',location='$location',detid='$detid'";
+    $sql .= " WHERE id=$id";
+  }
+  if (param("DelButtonConfirm")) {
+    confirm_delete();
+    return;
+  }
+  if (param("CancelButton")) {
+  print <<EOF;
+<META HTTP-EQUIV="Refresh" CONTENT="0;
+URL=lsruns">
+EOF
+  return;
+  }
+  if (param("DelButton")) {
+    $sql .="DELETE FROM run_desc";
+    $sql .= " WHERE id=$id";
+  }
+
+
+  $statement = $db_handle->prepare($sql)
+    or die "Couldn't prepare query '$sql': $DBI::errstr\n";
+
+  $statement->execute()
+    or die "Couldn't execute query '$sql': $DBI::errstr\n";
+
+  print <<EOF;
+<META HTTP-EQUIV="Refresh" CONTENT="0;
+URL=lsruns">
+EOF
+}
+
+
+sub add_run() {
+  my $active = shift;
+  return unless($active);
+
+  print start_form();
+  print table({-width=>"80%"});
+  print Tr(td("File Name:"),  td(textfield(-name=>"FileName",       -size=>60)) );
+  print Tr(td("Keyword:"),    td(textfield(-name=>"Keyword",    -size=>60)) );
+  print Tr(td("Location:"),   td(textfield(-name=>"Location",   -size=>60)) );
+  print Tr(td("Description:"),td(textarea (-name=>"Description",-columns=>50,-rows=>"10")) );
+  print Tr(td("DetId:"),   td(textfield(-name=>"Detid",   -size=>10)) );
+  print Tr( td(submit(-name=>"SubButton", -value=>"Add")),  td() );
+  print hidden(-name=>"ITEM",  -value=>"Insert", -override=>1);
+  print end_form();
+}
+
+
+
+sub insert_run() {
+  my $active = shift;
+  return unless($active);
+
+  my $file=param("FileName");
+  my $keyword=param("Keyword");
+  my $description=param("Description");
+  my $location=param("Location");
+  my $detid=param("Detid");
+  my $sql = "INSERT INTO run_desc SET";
+  $sql .= " file='$file',keyword='$keyword',description='$description',location='$location',detid='$detid'";
+
+  $statement = $db_handle->prepare($sql)
+    or die "Couldn't prepare query '$sql': $DBI::errstr\n";
+
+  $statement->execute()
+    or die "Couldn't execute query '$sql': $DBI::errstr\n";
+
+  print <<EOF;
+<META HTTP-EQUIV="Refresh" CONTENT="0;
+URL=lsruns">
+EOF
+}

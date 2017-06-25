@@ -1,0 +1,91 @@
+<html>
+	<head>
+	<title> DMTPC - Mission Control </title>
+
+	<script type="text/javascript" src="jquery.min.js"></script>
+  <script type="text/javascript" src="jquery.form.min.js"></script>
+	<script>
+	
+	$(document).ready(function()
+	{
+    $('#detname').load('../cgi-bin/getdet'); 
+    $('#menu').load('../cgi-bin/makemenu',function(){$('#li_data').addClass("active");});   
+    set_frame('');     
+
+   }); 
+
+   function set_frame(opts)
+   {
+     var detids = "detids="; 
+     if ($('#det_10L').attr('checked')) detids+= "10L|"; 
+     if ($('#det_unspec').attr('checked')) detids+= "unspec|"; 
+     if ($('#det_4sh').attr('checked')) detids+= "4sh|";
+     if ($('#det_1m3').attr('checked')) detids+= "1m3|";
+     if ($('#det_rnd').attr('checked')) detids+= "rnd|"; 
+     if (detids!="detids=") detids = detids.slice(0,-1);  //Take off last character if there is something else...
+
+      $('#fr').attr("src","/cgi-bin/lsruns?"+detids+"&"+opts); 
+   }
+
+	
+	</script>
+
+  <link rel="stylesheet" href="styles.css" type="text/css"/>
+
+	</head>
+
+  <body>
+    <div id="all">
+
+  <img src="gfx/webpageheader.png" alt="DMTPC - Mission Control" />
+  <div id="detname">
+   </div>
+  <div id="menu">
+  </div>
+
+  <div id="main">
+
+
+    <h2 align="center" >Runs</h2>
+    <hr/>
+    <div id="lscontrols">
+    <p align="center"> 
+    <a href="#" onclick="set_frame('');">[All]</a> 
+    <a href="#" onclick="set_frame('LIMIT=50');">[Last 50]</a>
+    <a href="#" onclick="set_frame('ITEM=List&KEYWORD=ALPHA');">[ALPHA]</a> 
+    <a href="#" onclick="set_frame('ITEM=List&KEYWORD=CF252');">[CF252]</a> 
+    <a href="#" onclick="set_frame('ITEM=List&KEYWORD=FE55');">[FE55]</a> 
+    <a href="#" onclick="set_frame('ITEM=List&KEYWORD=WIMP');">[WIMP]</a> 
+    <a href="#" onclick="set_frame('ITEM=List&KEYWORD=NONE');">[BKGR]</a> 
+    <a href="#" onclick="set_frame('ITEM=List&KEYWORD=CO\-57');">[CO-57]</a> 
+    <a href="#" onclick="set_frame('ITEM=List&KEYWORD=DT');">[DT]</a> 
+    <a href="#" onclick="set_frame('ITEM=List&KEYWORD=COSMIC');">[COSMIC]</a> 
+    <a href="#" onclick="set_frame('ITEM=Add');">[NEW]</a> 
+    <br/>
+    Detector: <input type="checkbox" id="det_unspec" checked>Unspecified &nbsp;&nbsp; 
+              <input type="checkbox" id="det_10L" checked>10L&nbsp;&nbsp; 
+              <input type="checkbox" id="det_4sh" checked>4Shooter&nbsp;&nbsp;
+	      <input type="checkbox" id="det_1m3" checked>CubicMeter&nbsp;&nbsp;
+              <input type="checkbox" id="det_rnd" checked>R&amp;D&nbsp;&nbsp; 
+
+    </p>
+    </div>
+    <div>
+    <iframe id="fr" width="100%" src = "/cgi-bin/lsruns" height="600" > 
+     </iframe>
+     </div>
+
+
+    <h2 align="center"> Pipeline </h2>
+    <hr/>
+    <h2 align="center"> DB </h2>
+    <hr/>
+    <h2 align="center"> Disk Usage </h2>
+       <div>
+       <iframe id="du" width="100%" src="/cgi-bin/diskusage" height="500" >
+       </iframe>
+       </div>
+   </div>
+ </div>
+ </body>
+ <html>

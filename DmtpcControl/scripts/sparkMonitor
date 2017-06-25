@@ -1,0 +1,94 @@
+#!/usr/bin/perl 
+
+use warnings;
+use DM;
+use GetTime;
+
+#use CGI ':standard';
+#use CGI::Carp qw(fatalsToBrowser);
+
+$db_handle = DM->connect
+    or die("Could not connect! \n");
+
+@control_params = qw(caen_brd1_ch0 caen_brd1_ch1 caen_brd1_ch2 caen_brd1_ch3);
+@control_titles = ("Anode 4sh-TL", "Anode 4sh-TR", "Anode 4sh-BR", "Anode 4sh-BL");
+
+my $filename = '/var/www/html/tmp/sparkMonitor.out';
+open(my $fh, '>>', $filename);
+print $fh "Spark monitor started at " . GetTime->getTime(5) . "\n";
+close $fh;
+
+my $error_count=0;
+#my $count=0;
+#my $spark=0;
+#my @spark_array = {0,0,0,0);
+
+while(1) {
+    $count=0;
+    $spark=0;
+    @spark_array = (0,0,0,0);
+
+    open(my $fh, '>>', $filename);
+
+    foreach $param (@control_params) {
+
+	$read_curr = $param . "_i";
+
+	$sql = "select COUNT(value) from " . $read_curr . " where timestamp > DATE_SUB(NOW(), INTERVAL 1 MINUTE) && value>=0.5";
+
+	# if you want to calculate average instead, use this line
+	#$sql = "select AVG(value) from " . $read_curr . " where timestamp > DATE_SUB(NOW(), INTERVAL 1 MINUTE)";
+
+	$statement = $db_handle->prepare($sql)
+            or die "Couldn't prepare query '$sql': $DBI::errstr\n";
+        $statement->execute()
+            or die "Couldn't execute query '$sql': $DBI::errstr\n";
+	$count_sql = $statement->fetchrow_array();
+	my $nowTime = GetTime->getTime(5);
+	
+	if ($count_sql >=8) {
+	    print $fh "sparkMonitor WARNING at " . $nowTime . ": " . $control_titles[$count] . " count = $count_sql \n";
+	}
+
+	if ($count_sql>=15) {
+	    $spark_array[$count]=$count_sql;
+	    $spark=1;
+	    $set_volt = $param . "_set_hv";
+	    $sql = "INSERT INTO " . $set_volt . " (value) values ( 0.0 )";
+	    print $fh "sparkMonitor ACTION at " . $nowTime . ": Turning off " . $control_titles[$count] . "\n";
+	    $statement = $db_handle->prepare($sql)
+		or die "Couldn't prepare query '$sql': $DBI::errstr\n";
+	    $statement->execute()
+		or die "Couldn't execute query '$sql': $DBI::errstr\n";
+	}
+	$count++;
+    }
+                                                                               
+#	$read_status = $param . "_status";
+#	$sql = "select * from " . $read_status . " ORDER BY timestamp DESC LIMIT 1";
+#	$statement = $db_handle->prepare($sql);
+
+    $count=0;
+    if ($spark) {
+	print $fh "Sending notifications\n";
+	$error_count++;
+	$subject = "DMTPC Spark Monitor ERROR # $error_count";
+	$body="Excessive sparking on: \n";
+	foreach $channel (@control_titles) {
+	    if ($spark_array[$count]>0) { $body = $body . "$channel ($spark_array[$count] sparks) \n"; }
+	    $count++;
+	}
+	$body = $body . "Turning off voltage on all listed quadrants!\n";
+	DM->notify_dmtpc($subject, $body);
+	sleep(30);
+    }
+    $count=0;
+
+    close $fh;
+
+    sleep(30);
+
+}
+
+$statement->finish();
+$db_handle->disconnect();

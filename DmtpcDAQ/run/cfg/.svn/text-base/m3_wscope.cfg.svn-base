@@ -1,0 +1,36 @@
+verbose = 1 
+ccd_xbin = 4 
+ccd_ybin = 4 
+ccd_exposure = 2000 #ms 
+ccd_temp = -20   
+ccd_buffer_size = 10
+ccd_nflushes = 0
+ccd_shutter_always_open = true
+
+tag = m3
+out_dir = /data/ScopeTest/
+enable_fli_proline = false 
+n_fake_cameras = 1
+
+scope_enabled = true
+scope_buffer_size = 10000
+caen_connection_types = pcielink #, pcielink
+caen_link_nums = 0 #, 0 for board 0, 1 for board 1
+caen_conet_nodes = 0 # ,0
+caen_nboards = 1 # or 2
+#caen_board_cfg
+caen_cfg_channel_a = 2,7
+#caen_cfg_single_channel = 4
+
+caen_record_length = 12 #,50 us 
+caen_post_trigger = 75 #,75
+caen_num_events_BLT = 10 #,10
+#acquisition mode
+
+caen_vpp = 2000, 2000
+caen_vmin = -2000, -2000
+caen_vmax = 0, 0
+caen_dc_offset_voltage = -200, -100
+caen_channel_trigger_level_volts = -250, -250
+caen_pulse_polarity = 1, 1
+caen_trigger_polarity = 1, 1

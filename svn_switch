@@ -1,0 +1,10 @@
+#!/bin/bash          
+if [ -z "$1" ]
+then
+  echo "command usage: svn_switch <username>"
+  exit 0
+fi
+CURR_DIR="$(pwd)"
+cd /home/dmatter/Software/dmtpc-svn
+svn relocate svn+ssh://$1@noether.lns.mit.edu/net/zwicky/dmtpc/repository/dmtpc-svn
+cd $CURR_DIR

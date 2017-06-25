@@ -1,0 +1,136 @@
+#include "SkimDataset.hh"
+#include "SkimEvent.hh"
+#include "ImageCalculations.hh"
+#include "ImageProcessing.hh"
+//#include "MaxCamImageTools.hh"
+
+
+#include <TFile.h>
+#include <TH1.h>
+#include <TH2F.h>
+#include <TString.h>
+#include <TF1.h>
+#include <TGraph.h>
+
+#include <fstream>
+#include <vector>
+#include <iostream>
+
+using namespace std;
+using namespace dmtpc::core;
+using namespace dmtpc::image::calculations;
+using namespace dmtpc::image::processing;
+using namespace dmtpc::analysis;
+
+TH1D * getPixHist(TH2F * hist){
+
+  
+  int xmin = hist->GetXaxis()->GetFirst();
+  int ymin = hist->GetYaxis()->GetFirst();
+  int xmax = hist->GetXaxis()->GetLast();
+  int ymax = hist->GetYaxis()->GetLast();
+
+  vector<double> vals;
+  double min = 1e99;
+  double max = -1e99;
+  for (int x = xmin; x <= xmax; x++)
+    {
+      for (int y = ymin; y <= ymax; y++)
+	{
+	  double val = hist->GetBinContent(x,y);
+
+	  if (val < min) min = val;
+	  if (val > max) max = val;
+	  vals.push_back(val);
+	}
+    }
+
+  int nbins = int(max - min + 0.5);
+
+  TH1D * ph = new TH1D("ph","ph",nbins,min,max);
+
+  for (unsigned i = 0; i < vals.size(); i++)
+    {
+      ph->Fill(vals[i]);
+    }
+  return ph;
+}
+
+int main(int argc, char** argv){
+
+  //  TFile biasfile("output/darco_bias_10.root");
+
+  //  double biasvalue = MaxCamImageTools::getMean(biasframe);
+
+  bool bias = false;
+  
+  //std::cout<<"bias value: "<<biasvalue<<std::endl;
+  /*
+  ifstream infile;
+  infile.open(argv[1]);
+  TString tmp;
+  vector<TString> datafiles;
+  while(infile >> tmp){
+    datafiles.push_back(tmp);
+  }
+
+  */
+  const int nfiles = 6;
+  TString files[nfiles] = {"610","611","612","613","614","615"};
+  double exp[nfiles] = {1,2,5,10,30,60};
+
+  TFile savefile(argv[1],"recreate");
+  const int ncam = 4;
+  TH2F * summed_data[ncam];
+
+  for(int i = 0; i < ncam; i++){
+    summed_data[i] = new TH2F(Form("summed_image_%d",i),Form("Summed Source Data Cam %d",i),1019,0, 3056,1019,0,3056);
+  }
+  //  summed_data->SetBit(TH1::kIsAverage);
+  SkimDataset d[nfiles];
+
+  TF1 * gFit = new TF1("gFit","gaus");
+
+  double rms[4][nfiles];
+  TString dir = "/scratch2/gmuraru/dmtpc_software/Analyses/SkimFiles_Cosmic/";
+  TString name = "dmtpc_m3_alpha_00";
+
+  TH1D * pixhist[nfiles][ncam];
+
+
+  for(int i = 0; i < nfiles; i++){
+    TString open = dir;
+    open += name;
+    open += files[i];
+    open += "skim.root";
+    cout<<"open: "<<open<<endl;
+    d[i].openRootFile(open);
+    //cout<<open.ReplaceAll("skim.root","bias.root");
+    d[i].loadBiasFrames(true,open.ReplaceAll("skim.root","bias.root"));
+    d[i].getEvent(0);
+    //    const int ncam = d.event()->ncamera();
+
+    for(int c = 0; c < ncam; c++){
+      //TH2F * biasframe = (TH2F*)d[i].getBiasFrame(c)->Clone("tmpbias");
+      TH2F * img = (TH2F*)d[i].event()->image(c)->Clone("img");
+      pixhist[i][c] = getPixHist(img);
+      pixhist[i][c]->Fit(gFit);
+      rms[c][i] = gFit->GetParameter(2);
+    }
+    
+    //d.closeRootFile();
+  }
+
+  //  savefile.cd();
+  TGraph* graphs[4];
+  for(int c = 0; c < 4; c++){
+    graphs[c] = new TGraph(nfiles,exp,rms[c]);
+    // graphs[c]->Write();
+  }
+
+  
+
+  savefile.Write();
+  savefile.Close();
+  
+}

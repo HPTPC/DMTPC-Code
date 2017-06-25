@@ -1,0 +1,51 @@
+{
+  //this script should have been done in the code but it wasn't. the updated code with _noclust suffix should do it (and so should original without suffix) but this is to check the data run with the incorrect version to save having to reprocess all the data for this one histogram
+
+ 
+  //  TFile f("output/field_uniformity/m3_690V_manual1.root","update");
+  TFile f("output/field_uniformity/m3_voltage_off_skim_manual1.root","update");
+
+
+  //----check for zero-valued bin entries in the add_counter histogram (since dividing by this histogram and dividing by zero will cause infs
+
+ int c = 3;
+ TH2F * manual_summed_avgd;
+ manual_summed_avgd_3 = (TH2F*)manual_summed_image_3->Clone("manual_summed_avgd_3");
+ //save zero-valued bins for filling with average of neighbours
+ std::vector<int> zero_xbins;
+ std::vector<int> zero_ybins;
+ for(int xbin = 0; xbin < add_counter_3->GetNbinsX(); xbin++){
+   for(int ybin = 0; ybin < add_counter_3->GetNbinsY(); ybin++){
+     if(add_counter_3->GetBinContent(xbin,ybin) == 0){
+       add_counter_3->SetBinContent(xbin,ybin,-1);
+       zero_xbins.push_back(xbin);//store zero valued bin
+       zero_ybins.push_back(ybin);
+       continue;//skip averaging this bins as will set to average of neighbours
+     }
+     manual_summed_avgd_3->SetBinContent(xbin,ybin,manual_summed_avgd_3->GetBinContent(xbin,ybin)/add_counter_3->GetBinContent(xbin,ybin));//average bin-by-bin
+   }
+ }
+
+ //average zero-valued bin enties
+ for(int i = 0; i < zero_xbins.size(); i++){//loop over x, they will be the same size
+   double avg_value = 0;
+   double count = 0;
+   for(int x = (zero_xbins.at(i)-1); x == (zero_xbins.at(i)+1); x++){
+     if(x == zero_xbins.at(i))
+       continue;//don't want to include the zero bin
+     for(int y = (zero_ybins.at(i)-1); y == (zero_ybins.at(i)+1); y++){
+       if(y == zero_ybins.at(i))
+	 continue;
+       avg_value += manual_summed_avgd_3->GetBinContent(x,y);
+       count++;
+     }
+   }
+   avg_value /= count;
+   manual_summed_avgd_3->SetBinContent(zero_xbins.at(i),zero_ybins.at(i),avg_value);
+ }
+
+ manual_summed_avgd_3->Draw("colz");
+
+ f->Write();
+						   
+}

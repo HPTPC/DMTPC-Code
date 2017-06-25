@@ -1,0 +1,27 @@
+{
+
+  TFile f("output/plot_pedestal/m3_pedestalvexp_bias.root");
+  
+  TGraph * graphs[4];
+  
+  TCanvas c1;
+  c1.Divide(2,2);
+  
+  for(int i = 0; i < 4; i++){
+    graphs[i] = (TGraph*)f.Get(Form("Graph;%d",i+1));
+    graphs[i]->SetTitle("Pedestal RMS vs. Exposure");
+    graphs[i]->GetXaxis()->SetTitle("Exposure (s)");
+    graphs[i]->GetYaxis()->SetTitle("Pedestal RMS (ADU)");
+    c1.cd(i+1);
+    graphs[i]->Draw("alp");
+  }
+  TCanvas cc;
+  cc.cd();
+  graphs[i]->Draw("alp");
+
+}
+
+  
+  
+  
+			       

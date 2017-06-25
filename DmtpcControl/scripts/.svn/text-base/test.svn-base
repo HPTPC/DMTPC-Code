@@ -1,0 +1,26 @@
+#!/usr/bin/perl
+
+use CGI ':standard';
+use CGI::Carp qw(fatalsToBrowser);
+
+print  header(), start_html(-title => "Dark Matter DQM TEST", -BGCOLOR=>"White");
+
+print "@INC";
+
+$ENV{'LD_LIBRARY_PATH'} = "/usr/lib/:/usr/local/cern/root/lib:/usr/local/lib";
+$ENV{'ROOTSYS'} = "/usr/local/cern/root";
+$ENV{'PATH'}=$ENV{'PATH'}.":/usr/local/cern/root/bin";
+
+system("echo export PATH=\$PATH");
+print "<br>";
+system("echo export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH");
+print "<br>";
+system("echo export ROOTSYS=\$ROOTSYS");
+print "<br>";
+
+$command="cd /usr/local/apache2/htdocs/monitoring;./test.py";
+print "Running command=".$command."<br>";
+system($command);
+
+print "Done running command<br>";
+print end_html();

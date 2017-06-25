@@ -1,0 +1,25 @@
+# AmBe present, below BL quad, HV=on,  shutter ON/OFF alternating
+#  2x2, -32C, 2sec, 100 frames, scope HV on
+# AmBe source removed, HV=off, shutter closed.
+# 30 sec exposures
+m3_gain_R1046026.raw.root
+m3_gain_R1046027.raw.root
+m3_gain_R1046028.raw.root
+m3_gain_R1047001.raw.root
+m3_gain_R1047002.raw.root
+m3_gain_R1047003.raw.root
+m3_gain_R1047004.raw.root
+m3_gain_R1047005.raw.root
+m3_gain_R1047006.raw.root
+m3_gain_R1047007.raw.root
+m3_gain_R1047008.raw.root
+m3_gain_R1047009.raw.root
+#
+# numinally shutter on/off for every other run, but r=18? has shutter=on
+#m3_Michael_R1046017.raw.root
+#m3_Michael_R1046018.raw.root
+#m3_Michael_R1046019.raw.root
+#m3_Michael_R1046020.raw.root
+#m3_Michael_R1046021.raw.root
+#m3_Michael_R1046022.raw.root
+#

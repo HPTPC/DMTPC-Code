@@ -1,0 +1,10 @@
+#!/usr/bin/perl
+
+use CGI ':standard';
+use CGI::Carp qw(fatalsToBrowser);
+use DM; 
+
+print header(); 
+
+system("killall daq_wait"); 
+system("$DM::APACHE_ROOT/cgi-bin/daq_wait `cat $M::APACHE_ROOT/cgi-bin/lastdaq`"); 

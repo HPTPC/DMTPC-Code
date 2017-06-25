@@ -1,0 +1,123 @@
+#!/usr/bin/perl
+
+# This script connects to the DAQ machine and gets the stuff necessary for the DAQ control page
+# Only one session of this script is allowed to run. Enforced by sys::runalone; 
+# script started when ccdinit or run is sent if not already running. scripts stops when root.exe is no longer running. 
+
+# First argument is the command to run 
+# Second argument is the log file to check
+# Optional third argument is image directory to check 
+
+#TODO:
+# make sure not running ccdinit or run via ssh... 
+
+use DM; 
+use Sys::RunAlone; #Enforce single instance
+
+use CGI ':standard'; 
+use CGI::Carp qw(fatalsToBrowser); 
+
+
+print "Content-type:text/html\n\n";
+
+#Mark busy in database 
+
+#$db = DM->connect() or die ("Could not connect!\n"); 
+#
+#$sql = "SELECT daq FROM busy"; 
+#$statement = $db->prepare($sql) or die "can't prepare query '$sql': $DBI::errstr\n"; 
+#$statement->execute() or die "can't execute query '$sql': $DBI::errstr\n"; 
+#$row_ref = $statement->fetchrow_hashref(); 
+#if(int($row_ref->{daq})==1) { die "busy" }; 
+#
+#
+#$sql = "UPDATE busy SET daq = 1"; 
+#$statement = $db->prepare($sql) or die "can't prepare query '$sql': $DBI::errstr\n"; 
+#$statement->execute() or die "can't execute query '$sql': $DBI::errstr\n"; 
+
+
+my $what = param("what") or die "fail!"; 
+my $cmd = ""; 
+my $log = ""; 
+
+$do_images = 0; 
+
+if ($what eq "ccdinit")
+{
+  $cmd = "./ccdinit_setuid";
+  $log = "ccdinit" 
+}
+
+elsif ($what eq "usbreset")
+{
+  $cmd = "./usbreset" ; 
+  $log = "usbreset"; 
+
+}
+
+elsif ($what eq "normal" or $what eq "dark")
+{
+  $log = "run4sh";
+  if (!param("nruns")) {die "nruns not specified";}
+  my $nruns = param("nruns"); 
+  if ($nruns !=abs(int($nruns))) { die "bad nruns value"}
+
+  if (!param("nevents")) {die "nevents not specified";}
+  my $nevents = param("nevents"); 
+  if ($nevents !=abs(int($nevents))){ die "bad nevents value"}
+
+  if (!param("exposure")) {die "exposure not specified";}
+  my $exposure = param("exposure"); 
+  if ($exposure !=abs(int($exposure))) { die "bad exposure value"}
+
+  if (!param("keyword")) {die "keyword not specified";}
+  my $keyword = param("keyword"); 
+
+  if (!param("location")) {die "location not specified";}
+  my $location = param("location"); 
+
+  my $comment = param("comment"); 
+
+  #Remove line returns
+  $comment=~s/\n/\<br\>/g;
+
+  #escape quotes
+  $comment=~s/\'/\\\'/g;
+  $comment=~s/\"/\"/g;
+  
+
+  my $email = param("email"); 
+
+
+  my $trigger_level = param("trigger"); 
+  my $anode = param("anode"); 
+  my $mesh = param("mesh"); 
+  my $veto = param("veto"); 
+  my $pmt = param("pmt"); 
+
+  my $scopeType = param("scopeType"); 
+  my $ccdType = param("ccdType"); 
+
+  my $nbias = param("nbias"); 
+  if ($nbias!=int($nbias)) { $nbias = 100; } 
+  if ($trigger_level!=int($trigger_level)) { $trigger_level = 12; } 
+
+  $cmd="./run4sh $what $nruns $nevents $exposure \"$comment\" \"$keyword\" \"$location\" $trigger_level $anode $mesh $veto $pmt $nbias $ccdType $scopeType $email"; 
+}
+
+
+my $ssh = DM->ssh_connect($DM::DAQ) or die ("Can't get SSH session"); 
+
+$ssh->cmd("cd $DM::CCD_WORK_DIR"); 
+
+my $tmpdir = "$DM::APACHE_ROOT/$DM::HTMLDIR/tmp"; 
+
+system("echo $log > $DM::APACHE_ROOT/cgi-bin/lastdaq"); 
+system("nohup $DM::APACHE_ROOT/cgi-bin/daq_wait $log < /dev/null > $tmpdir/daq_wait.log 2>&1 &"); 
+$ssh->cmd("cd $DM::DAQ_WORK_DIR && nohup $cmd < /dev/null > rundaq.log 2>&1 &"); 
+close STDIN;
+close STDOUT;
+close STDERR;
+
+
+__END__
