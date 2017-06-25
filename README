@@ -1,1 +1,22 @@
-test2 
+This is the code from the DMTPC used for analysing data from the CCDs.
+
+Inside ccd_characterisation, run_calc_rms.C calculates the camera noise for a run. The bias is subtracted
+by averaging the bias frames and subtracting from each image. This code has been checked and works.
+Rub using: root -l calc_rms.C(run#)
+
+rdRaw2Ped.C calculates the noise of a run, with the bias being calculated for each pixel, then each bias
+is subtracted one by one. To run this the code needs to be compiled, then execute
+root -l rdRaw2Ped.C’(<runId>,0,”<path_to_output_directory>",1)’
+The location and name of the raw data files are hard coded, as well as the number of cameras enabled.
+The output is a root file with the extension m3ped.root.
+Inside these the histogram cam3_pedAvr contains the average pedestal (value) and rms (error) for each pixel.
+cam3_pedStat contains the pedestal ‘status’ with a non-zero value for all bins for which the pedestal was not computed.
+(the status of pedestals in the overscan are automatically assigned ‘1’)
+Other reasons that a pedestal may have non-zero status are:
+— pedestal spectrum has less than 90% of counts around pedestal
+— pedestal RMS is below 5 ADU
+They are basically pixels for which the pedestal could not be calculated. 
+(We haven't used this code yet)
+
+predicted_noise.C computes the noise given the camera specifications and compares this to the noise calculated from the
+noise calculation code
