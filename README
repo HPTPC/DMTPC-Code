@@ -2,7 +2,7 @@ This is the code from the DMTPC used for analysing data from the CCDs.
 
 Inside ccd_characterisation, run_calc_rms.C calculates the camera noise for a run. The bias is subtracted
 by averaging the bias frames and subtracting from each image. This code has been checked and works.
-Rub using: root -l calc_rms.C(run#)
+Run using: root -l run_calc_rms.C(run#)
 
 rdRaw2Ped.C calculates the noise of a run, with the bias being calculated for each pixel, then each bias
 is subtracted one by one. To run this the code needs to be compiled, then execute
