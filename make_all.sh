@@ -24,6 +24,22 @@ case $key in
   export FFTW3LIB="$2"
   shift
   ;;
+  --gsl-include)
+  export GSLINCLUDE="$2"
+  shift
+  ;;
+  --gsl-lib)
+  export GSLLIB="$2"
+  shift
+  ;;
+  --cfitsio-include)
+  export CFITSIOINCLUDE="$2"
+  shift
+  ;;
+  --cfitsio-lib)
+  export CFITSIOLIB="$2"
+  shift
+  ;;
   --stage)
   STAGE="$2"
   shift
@@ -40,7 +56,7 @@ shift
 done
 
 #DIRS=(DmtpcCore DmtpcMath DmtpcPhysics DmtpcWaveform DmtpcImage DmtpcQuality DmtpcAnalysis) 
-DIRS=(DmtpcWaveform) 
+DIRS=(DmtpcImage) 
 
 #DmtpcMonteCarlo/MCAmp DmtpcMonteCarlo/WimpSpectrum DmtpcMonteCarlo/retrim DmtpcMonteCarlo/mctpc)
 NDIRS=${#DIRS[@]}

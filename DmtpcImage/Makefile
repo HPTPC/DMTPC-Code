@@ -1,11 +1,17 @@
 #If cfitsio is not available, set ENABLE_FITS to 0 
 ENABLE_FITS=1
 
+#Hacks for compilation
+GSLINCLUDE?=/scratch1/darkmatter/dmtpc/software/gsl-2.1/install/include
+GSLLIB?=/scratch1/darkmatter/dmtpc/software/gsl-2.1/install/include
+CFITSIOINCLUDE?=/scratch1/darkmatter/dmtpc/projects/DarkMatter/cfitsio
+CGITSIOLIB?=/scratch1/darkmatter/dmtpc/projects/DarkMatter/cfitsio
+
 CXX=g++
 LDFLAGS=`root-config --libs` -lgsl
-LDFLAGS+=-L/home/lar/dbrailsford/dmtpc/gsl/gsl-2.4/install/lib -lgsl 
+LDFLAGS+=-L$(GSLLIB) -lgsl 
 CXXFLAGS= `root-config --cflags` -fPIC -O3 -g -w
-CXXFLAGS+=-I/home/lar/dbrailsford/dmtpc/gsl/gsl-2.4/install/include
+CXXFLAGS+=-I$(GSLINCLUDE)
 
 LDFLAGS+= -Wl,-z,defs
 
@@ -24,8 +30,8 @@ INCLUDES := $(addprefix $(INCLUDEDIR)/, $(shell ls $(INCLUDEDIR)))
 
 
 ifeq ($(ENABLE_FITS),1)
-	LDFLAGS+=-L/home/lar/dbrailsford/dmtpc/cfitsio/cfitsio/install/lib -lcfitsio
-	CXXFLAGS+=-I/home/lar/dbrailsford/dmtpc/cfitsio/cfitsio/install/include
+	LDFLAGS+=-L$(CFITSIOLIB) -lcfitsio
+	CXXFLAGS+=-I$(CFITSIOINCLUDE)
 else
 	CXXFLAGS += -DDMTPC_NO_FITS
 endif 
@@ -36,7 +42,7 @@ endif
 
 $(LIBDIR)/libDmtpcImage.so: $(OBJS) | $(LIBDIR)
 	@echo Building shared library $@
-	@$(CXX) $(LDFLAGS) $(OBJS) -g -shared -o $@
+	@$(CXX) $(LDFLAGS) $(OBJS) -Wl,--enable-new-dtags,-rpath,"$(GSLLIB) $(CFITSIOLIB)" -g -shared -o $@
 
 $(OBJS): | $(BUILDDIR)
 
