@@ -1,17 +1,28 @@
-CXX=g++
-LDFLAGS=`root-config --libs` -lMathMore -lMinuit2 `dmtpc-config --lib-core --lib-image --lib-waveform --lib-math --lib-physics` -Wl,-z,defs -lSpectrum -g	
+FFTW3LIB?=/scratch1/darkmatter/dmtpc/software/fftw3-dev/install
+
+
+LDFLAGS=`root-config --libs` -lMathMore -lMinuit2 `$(DMTPC_HOME)/DmtpcTools/dmtpc-config/dmtpc-config --lib-core --lib-image --lib-waveform --lib-math --lib-physics` -Wl,-z,defs -lSpectrum -g	
 #for sparkdb
-LDFLAGS += `dmtpc-config --lib-quality`
-LDFLAGS += -L/usr/lib64 -lsqlite3
+LDFLAGS += `$(DMTPC_HOME)/DmtpcTools/dmtpc-config/dmtpc-config --lib-quality`
+#dbrailsf hack
+ifneq ($(SQLITE3LIB),)
+	LDFLAGS += -L$(SQLITE3LIB) -lsqlite3
+else
+	LDFLAGS += -L/usr/lib64 -lsqlite3
+endif
 #-lgsl -lgslcblas -g
-CXXFLAGS= `root-config --cflags` -fPIC  -g `dmtpc-config --inc-core --inc-image --inc-waveform --inc-math --inc-physics`  -Wall -Wextra  
+CXXFLAGS= `root-config --cflags` -fPIC  -g `$(DMTPC_HOME)/DmtpcTools/dmtpc-config/dmtpc-config --inc-core --inc-image --inc-waveform --inc-math --inc-physics`  -Wall -Wextra  
 #CXXFLAGS += -O3
 #for sparkdb
-CXXFLAGS += `dmtpc-config --inc-quality`
+CXXFLAGS += `$(DMTPC_HOME)/DmtpcTools/dmtpc-config/dmtpc-config --inc-quality`
 #added
-LDFLAGS += -L/scratch1/darkmatter/dmtpc/software/fftw3-dev/install -lfftw3
+LDFLAGS += -L$(FFTW3LIB) -lfftw3
 #LDFLAGS+=-L${DMTPC_SOFTWARE}/gsl-2.1/install/lib -lgsl -lgslcblas -g
-CXXFLAGS+=-I${DMTPC_SOFTWARE}/fftw3-dev/install/include/
+#dbrailsf hack
+ifneq ($(SQLITE3INCLUDE),)
+	CXXFLAGS+=-I$(SQLITE3INCLUDE)
+endif
+#CXXFLAGS+=-I/home/lar/dbrailsford/dmtpc/fftw/fftw-3.3.6-pl2/install/include/
 #CXXFLAGS+=-I${DMTPC_SOFTWARE}/gsl-2.1/install/include/
 #LDFLAGS += -L/usr/lib64 -lgsl -lgslcblas
 #CXXFLAGS+=/usr/
