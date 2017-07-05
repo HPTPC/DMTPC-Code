@@ -1,13 +1,21 @@
 CXX=g++
 LDFLAGS=`root-config --libs`
 CXXFLAGS= `root-config --cflags` -fPIC -O0 -g  -Wall -Wextra -w
-CXXFLAGS +=`dmtpc-config --inc-core`
+CXXFLAGS +=`$(DMTPC_HOME)/DmtpcTools/dmtpc-config/dmtpc-config --inc-core`
+#dbrailsf 05/07/17  Hack in a sqlite3 location if specified in an environment variable
+ifneq ($(SQLITE3INCLUDE),)
+	CXXFLAGS +=-I$(SQLITE3INCLUDE)
+endif
 #for uin32_t on m3daq, comment out elsewhere:
 #CXXFLAGS += -std=c++0x
-LDFLAGS +=`dmtpc-config --lib-core`
-
+LDFLAGS +=`$(DMTPC_HOME)/DmtpcTools/dmtpc-config/dmtpc-config --lib-core`
+#dbrailsf 05/07/17  Hack in a sqlite3 location if specified in an environment variable
+ifneq ($(SQLITE3LIB),)
+	LDFLAGS +=-L$(SQLITE3LIB) -lsqlite3
+else
+	LDFLAGS += -L/usr/lib64 -lsqlite3
+endif
 LDFLAGS += -L/usr/lib64/mysql -lmysqlclient
-LDFLAGS += -L/usr/lib64 -lsqlite3
 
 VPATH=src:include:build
 LIBDIR=lib
@@ -25,7 +33,7 @@ all: $(LIBDIR)/libDmtpcQuality.so $(BINARIES)
 
 $(LIBDIR)/libDmtpcQuality.so: $(OBJS) $(LIBDIR)
 	@echo Building shared library $@
-	@$(CXX) $(LDFLAGS) $(OBJS) -shared -o $@
+	@$(CXX) $(LDFLAGS) $(OBJS) -Wl,--enable-new-dtags,-rpath,"$(SQLITE3LIB)" -shared -o $@
 
 
 $(OBJS): | $(BUILDDIR)

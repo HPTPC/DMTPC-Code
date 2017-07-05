@@ -7,9 +7,10 @@
 CLEAN=true
 MAKE=true
 MAKEDIR=$PWD
+#dbrailsf 05/07/17 get the top level directory of the dmtpc code.  Needed for finding dmtpc-config
+export DMTPC_HOME=`dirname "$(readlink -f "$0")"`
 
 #dbrailsf 05/0717 add command line args which will pick up include and lib paths which are then picked up by the relevant make files
-
 #Get the command line arguments
 while [[ $# -gt 1 ]]
 do
@@ -40,6 +41,14 @@ case $key in
   export CFITSIOLIB="$2"
   shift
   ;;
+  --sqlite3-include)
+  export SQLITE3INCLUDE="$2"
+  shift
+  ;;
+  --sqlite3-lib)
+  export SQLITE3LIB="$2"
+  shift
+  ;;
   --stage)
   STAGE="$2"
   shift
@@ -55,8 +64,9 @@ esac
 shift
 done
 
+DIRS=(DmtpcQuality) 
 #DIRS=(DmtpcCore DmtpcMath DmtpcPhysics DmtpcWaveform DmtpcImage DmtpcQuality DmtpcAnalysis) 
-DIRS=(DmtpcImage) 
+
 
 #DmtpcMonteCarlo/MCAmp DmtpcMonteCarlo/WimpSpectrum DmtpcMonteCarlo/retrim DmtpcMonteCarlo/mctpc)
 NDIRS=${#DIRS[@]}
