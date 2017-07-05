@@ -1,8 +1,8 @@
 CXX=g++
 LDFLAGS=`root-config --libs` -Wl,-z,defs
 CXXFLAGS= `root-config --cflags` -fPIC -O3
-CXXFLAGS+=-I/scratch1/darkmatter/dmtpc/software/fftw3-dev/install/include/
-LDFLAGS+=-L/scratch1/darkmatter/dmtpc/software/fftw3-dev/install/ -lfftw3
+CXXFLAGS+=-I/home/lar/dbrailsford/dmtpc/fftw/fftw-3.3.6-pl2/install/include
+LDFLAGS+=-L/home/lar/dbrailsford/dmtpc/fftw/fftw-3.3.6-pl2/install/lib -lfftw3
 
 VPATH=src:include:build
 LIBDIR=lib
