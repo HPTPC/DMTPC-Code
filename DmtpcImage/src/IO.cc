@@ -1,5 +1,6 @@
 #include "ImageIO.hh"
-#include "/scratch1/darkmatter/dmtpc/projects/DarkMatter/cfitsio/fitsio.h" 
+//#include "/scratch1/darkmatter/dmtpc/projects/DarkMatter/cfitsio/fitsio.h" 
+#include "fitsio.h"
 #include <time.h>
 #include <iostream>
 #include "TH2.h"

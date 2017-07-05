@@ -3,9 +3,10 @@ ENABLE_FITS=1
 
 CXX=g++
 LDFLAGS=`root-config --libs` -lgsl
-LDFLAGS+=-L$(addprefix $(DMTPC_SOFTWARE), /gsl-2.1/install/lib) -lgsl 
+LDFLAGS+=-L/home/lar/dbrailsford/dmtpc/gsl/gsl-2.4/install/lib -lgsl 
 CXXFLAGS= `root-config --cflags` -fPIC -O3 -g -w
-CXXFLAGS+=-I$(addprefix $(DMTPC_SOFTWARE), /gsl-2.1/install/include/)
+CXXFLAGS+=-I/home/lar/dbrailsford/dmtpc/gsl/gsl-2.4/install/include
+
 LDFLAGS+= -Wl,-z,defs
 
 
@@ -23,7 +24,8 @@ INCLUDES := $(addprefix $(INCLUDEDIR)/, $(shell ls $(INCLUDEDIR)))
 
 
 ifeq ($(ENABLE_FITS),1)
-	LDFLAGS += -L/scratch1/darkmatter/dmtpc/projects/DarkMatter/cfitsio -lcfitsio
+	LDFLAGS+=-L/home/lar/dbrailsford/dmtpc/cfitsio/cfitsio/install/lib -lcfitsio
+	CXXFLAGS+=-I/home/lar/dbrailsford/dmtpc/cfitsio/cfitsio/install/include
 else
 	CXXFLAGS += -DDMTPC_NO_FITS
 endif 
