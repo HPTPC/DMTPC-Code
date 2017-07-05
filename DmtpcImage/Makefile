@@ -42,7 +42,7 @@ endif
 
 $(LIBDIR)/libDmtpcImage.so: $(OBJS) | $(LIBDIR)
 	@echo Building shared library $@
-	@$(CXX) $(LDFLAGS) $(OBJS) -Wl,--enable-new-dtags,-rpath,"$(GSLLIB) $(CFITSIOLIB)" -g -shared -o $@
+	@$(CXX) $(LDFLAGS) $(OBJS) -Wl,--enable-new-dtags,-rpath,"$(GSLLIB)" -Wl,--enable-new-dtags,-rpath,"$(CFITSIOLIB)" -g -shared -o $@
 
 $(OBJS): | $(BUILDDIR)
 
