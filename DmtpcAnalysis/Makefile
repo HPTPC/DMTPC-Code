@@ -46,7 +46,7 @@ all: $(LIBDIR)/libDmtpcAnalysis.so $(BINARIES)
 
 $(LIBDIR)/libDmtpcAnalysis.so: $(OBJS) $(LIBDIR)
 	@echo Building shared library $@
-	$(CXX) $(LDFLAGS) $(OBJS) -shared -o $@
+	$(CXX) $(LDFLAGS) $(OBJS) -Wl,--enable-new-dtags,-rpath,`$(DMTPC_HOME)/DmtpcTools/dmtpc-config/dmtpc-config --libpath-core` -Wl,--enable-new-dtags,-rpath,`$(DMTPC_HOME)/DmtpcTools/dmtpc-config/dmtpc-config --libpath-image` -Wl,--enable-new-dtags,-rpath,`$(DMTPC_HOME)/DmtpcTools/dmtpc-config/dmtpc-config --libpath-waveform` -Wl,--enable-new-dtags,-rpath,`$(DMTPC_HOME)/DmtpcTools/dmtpc-config/dmtpc-config --libpath-math` -Wl,--enable-new-dtags,-rpath,`$(DMTPC_HOME)/DmtpcTools/dmtpc-config/dmtpc-config --libpath-physics` -Wl,--enable-new-dtags,-rpath,`$(DMTPC_HOME)/DmtpcTools/dmtpc-config/dmtpc-config --libpath-quality` -Wl,--enable-new-dtags,-rpath,$(SQLITE3LIB) -shared -o $@
 
 
 $(OBJS): | $(BUILDDIR)
@@ -63,15 +63,15 @@ $(LIBDIR):
 
 $(BUILDDIR)/%.o: %.cc $(INCLUDES) Makefile | $(BUILDDIR)
 	@echo Compiling  $< 
-	$(CXX) $(CXXFLAGS) -I./include -I./ -o $@ -c $< 
+	@$(CXX) $(CXXFLAGS) -I./include -I./ -o $@ -c $< 
 
 $(BINDIR)/%: %.cc $(INCLUDES) Makefile | $(BINDIR)
 	@echo Compiling $<
-	$(CXX) $(CXXFLAGS) -I./include -I./ -o $@ $(LDFLAGS) -L./$(LIBDIR) -lDmtpcAnalysis  $< 
+	@$(CXX) $(CXXFLAGS) -I./include -I./ -o $@ $(LDFLAGS) -L./$(LIBDIR) -lDmtpcAnalysis  $< 
 
 $(BUILDDIR)/DmtpcAnalysisCint.cc: $(INCLUDES) LinkDef.h | $(BUILDDIR)
 	@echo Running rootcint
-	rootcint  -f $(BUILDDIR)/DmtpcAnalysisCint.cc -c $(CXXFLAGS) $(INCLUDES) LinkDef.h
+	@rootcint  -f $(BUILDDIR)/DmtpcAnalysisCint.cc -c $(CXXFLAGS) $(INCLUDES) LinkDef.h
 
 
 clean: 
