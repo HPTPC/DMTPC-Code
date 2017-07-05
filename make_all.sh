@@ -7,7 +7,41 @@
 CLEAN=true
 MAKE=true
 MAKEDIR=$PWD
-DIRS=(DmtpcCore DmtpcMath DmtpcPhysics DmtpcWaveform DmtpcImage DmtpcQuality DmtpcAnalysis) 
+
+#dbrailsf 05/0717 add command line args which will pick up include and lib paths which are then picked up by the relevant make files
+
+#Get the command line arguments
+while [[ $# -gt 1 ]]
+do
+key="$1"
+
+case $key in
+  --fftw3-include)
+  export FFTW3INCLUDE="$2"
+  shift
+  ;;
+  --fftw3-lib)
+  export FFTW3LIB="$2"
+  shift
+  ;;
+  --stage)
+  STAGE="$2"
+  shift
+  ;;
+  --project)
+  PROJECT="$2"
+  shift
+  ;;
+  *)
+
+  ;;
+esac
+shift
+done
+
+#DIRS=(DmtpcCore DmtpcMath DmtpcPhysics DmtpcWaveform DmtpcImage DmtpcQuality DmtpcAnalysis) 
+DIRS=(DmtpcWaveform) 
+
 #DmtpcMonteCarlo/MCAmp DmtpcMonteCarlo/WimpSpectrum DmtpcMonteCarlo/retrim DmtpcMonteCarlo/mctpc)
 NDIRS=${#DIRS[@]}
 for i in `seq 0 $NDIRS`  

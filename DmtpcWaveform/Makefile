@@ -1,8 +1,13 @@
+
+#Use rubbish ifdefs to hack the dependencies into the make files
+FFTW3INCLUDE?=/scratch1/darkmatter/dmtpc/software/fftw3-dev/install/include
+FFTW3LIB?=/scratch1/darkmatter/dmtpc/software/fftw3-dev/install/lib
+
 CXX=g++
 LDFLAGS=`root-config --libs` -Wl,-z,defs
 CXXFLAGS= `root-config --cflags` -fPIC -O3
-CXXFLAGS+=-I/home/lar/dbrailsford/dmtpc/fftw/fftw-3.3.6-pl2/install/include
-LDFLAGS+=-L/home/lar/dbrailsford/dmtpc/fftw/fftw-3.3.6-pl2/install/lib -lfftw3
+CXXFLAGS+=-I$(FFTW3INCLUDE)
+LDFLAGS+=-L/$(FFTW3LIB) -lfftw3
 
 VPATH=src:include:build
 LIBDIR=lib
@@ -24,7 +29,7 @@ shared: $(LIBDIR)/libDmtpcWaveform.so
 
 $(LIBDIR)/libDmtpcWaveform.so: $(OBJS)  | $(LIBDIR)
 	@echo Building shared library $@
-	@$(CXX) $(LDFLAGS) $(OBJS) -g -shared -o $@
+	@$(CXX) $(LDFLAGS) $(OBJS) -Wl,--enable-new-dtags,-rpath,$(FFTW3LIB) -g -shared -o $@
 
 $(OBJS): | $(BUILDDIR)
 
