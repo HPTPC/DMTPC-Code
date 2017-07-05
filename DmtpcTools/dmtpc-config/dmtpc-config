@@ -57,6 +57,14 @@ for arg in sys.argv[1:]:
     else:
       print "-L"+base+"/" + dirs[key] + "/lib " + libs[key]
 
+  elif arg[:10]  == "--libpath-":
+    key = arg[10:] 
+    if not (key in dirs) or (not key in libs): 
+      print "unsupported value " + arg
+    else:
+      print base+"/" + dirs[key] + "/lib"
+
+
   elif arg[:6]  == "--inc-":
     key = arg[6:] 
     if not key in dirs: 
