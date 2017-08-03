@@ -69,6 +69,8 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, Bool_t pixflag=0, const cha
     const int stupidcppy = (int)(d->event()->ccdData(cam)->GetNbinsY());
     const int x = stupidcppx;
     const int y = stupidcppy;
+    if(pixflag==1)
+    {
     Double_t pixval[x][y];
 
     //Store rms values of all pixels
@@ -79,7 +81,7 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, Bool_t pixflag=0, const cha
     Double_t sum[x][y]
             ,sumsquare[x][y]
             ,rms[x][y];
-
+     }
     //create branches for the variables you want to save to the tree
     t.Branch("mean",&mean);
     t.Branch("rms",&rms);
@@ -143,6 +145,8 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, Bool_t pixflag=0, const cha
     }
 
     //get rms of each pixel and store in (TH2F)pix
+    if(pixflag==1)
+    {
      for(int j=0;j<x;j++)
      {
        for(int k=0;k<y;k++)
@@ -151,6 +155,7 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, Bool_t pixflag=0, const cha
          pix->Fill(j,k,rms[j][k]);
        }
      }
+    }
 
     //fit gaussian to all data
     TF1 * gFit2 = new TF1("gFit2","gaus");
@@ -169,8 +174,10 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, Bool_t pixflag=0, const cha
     image->Write();
     intensity->Write();
     bias->Write();
+    if(pixflag==1)
+    {
     pix->Write();
-
+    }
     }
 
   }
