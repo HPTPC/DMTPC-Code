@@ -69,7 +69,16 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, Bool_t pixflag=0, const cha
     const int stupidcppy = (int)(d->event()->ccdData(cam)->GetNbinsY());
     const int x = stupidcppx;
     const int y = stupidcppy;
-    Float_t pixval[x][y];
+    Double_t pixval[x][y];
+
+    //Store rms values of all pixels
+    TH2F *pix =new TH2F("pix","rms of individual pixels",x,0,x,y,0,y);
+    pix->SetStats(0);
+
+    //This block creates 3 arrays for computing rms of each individual pixels
+    Double_t sum[x][y]
+            ,sumsquare[x][y]
+            ,rms[x][y];
 
     //create branches for the variables you want to save to the tree
     t.Branch("mean",&mean);
@@ -81,7 +90,7 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, Bool_t pixflag=0, const cha
   //create branch pixval only if pixflag is set to 1
     if (pixflag==1)
     {
-      const char *leaflist = (char*)TString::Format("pixval[%i][%i]/F",x,y);
+      const char *leaflist = (char*)TString::Format("pixval[%i][%i]/D",x,y);
       t.Branch("pixval",&pixval[0][0],leaflist);
     }
 
@@ -101,9 +110,9 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, Bool_t pixflag=0, const cha
 
       ccdTemp = d->event()->ccdConfig(cam)->ccdTemp;
 
-      for (int m=0; m<image->GetNbinsX(); m++){
-        for (int b=0; b<image->GetNbinsY(); b++) {
-          Float_t temppixval=image->GetBinContent(m,b);
+      for (int m=0; m<x; m++){
+        for (int b=0; b<y; b++) {
+          Double_t temppixval=image->GetBinContent(m,b);
 
           //fill temppixval to pixval[][] if pixflag is true(1)
           if (pixflag==1)
@@ -111,11 +120,16 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, Bool_t pixflag=0, const cha
             pixval[m][b]=temppixval;
           }
 
+          //fill sum[][] and sumsquare[][]
+          sum[m][b]=sum[m][b]+temppixval;
+          sumsquare[m][b]=sumsquare[m][b]+temppixval*temppixval;
+
          //fill both intenstiy hisotgrams with the pixel data
          intensity->Fill(temppixval);
          eventintensity->Fill(temppixval);
        }
      }
+
      //gaussian is fitted to the data from event i 
      TF1 * gFit = new TF1("gFit","gaus");
      eventintensity->Fit(gFit,"WL");
@@ -127,6 +141,17 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, Bool_t pixflag=0, const cha
       delete eventintensity;
       delete gFit;
     }
+
+    //get rms of each pixel and store in (TH2F)pix
+     for(int j=0;j<x;j++)
+     {
+       for(int k=0;k<y;k++)
+       {
+         rms[j][k]=(Double_t)TMath::Sqrt(sumsquare[j][k]/n-(sum[j][k]/n)*(sum[j][k]/n));
+         pix->Fill(j,k,rms[j][k]);
+       }
+     }
+
     //fit gaussian to all data
     TF1 * gFit2 = new TF1("gFit2","gaus");
     intensity->Fit(gFit2);
@@ -144,6 +169,7 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, Bool_t pixflag=0, const cha
     image->Write();
     intensity->Write();
     bias->Write();
+    pix->Write();
 
     }
 
