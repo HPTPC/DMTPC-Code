@@ -1,7 +1,6 @@
-void calc_rms_runs(int run1 = 1167004, int runs = 1, Bool_t pixflag=0, const char * dir = "/scratch3/wparker2/dmtpc2/data/2017/06/raw")
+void calc_rms_runs(int run1 = 1167004, int runs = 1, const char * dir = "/scratch3/wparker2/dmtpc2/data/2017/06/raw")
 {// runs = number of runs you want to consider 
 //run1 is the runID of the first one 
-//pixflag turns branch pixflag on and off. If it's set to 1, all intensity values of all pixels are saved
   //in the branch pixval. The size of output file is inflated by more than 1000 times
 //dir is the path to the directory with the raw data files in it
 
@@ -69,10 +68,6 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, Bool_t pixflag=0, const cha
     const int stupidcppy = (int)(d->event()->ccdData(cam)->GetNbinsY());
     const int x = stupidcppx;
     const int y = stupidcppy;
-    if(pixflag==1)
-    {
-    Double_t pixval[x][y];
-    }
     //Store rms values of all pixels
     TH2F *pix =new TH2F("pix","rms of individual pixels",x,0,x,y,0,y);
     pix->SetStats(0);
@@ -89,12 +84,6 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, Bool_t pixflag=0, const cha
     t.Branch("chi",&chi);
     t.Branch("runnum",&runnum);
     t.Branch("ccdTemp",&ccdTemp);
-  //create branch pixval only if pixflag is set to 1
-    if (pixflag==1)
-    {
-      const char *leaflist = (char*)TString::Format("pixval[%i][%i]/D",x,y);
-      t.Branch("pixval",&pixval[0][0],leaflist);
-    }
 
     std::cout<< n <<" events."<<std::endl;
 
@@ -115,12 +104,6 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, Bool_t pixflag=0, const cha
       for (int m=0; m<x; m++){
         for (int b=0; b<y; b++) {
           Double_t temppixval=image->GetBinContent(m,b);
-
-          //fill temppixval to pixval[][] if pixflag is true(1)
-          if (pixflag==1)
-          {
-            pixval[m][b]=temppixval;
-          }
 
           //fill sum[][] and sumsquare[][]
           sum[m][b]=sum[m][b]+temppixval;
