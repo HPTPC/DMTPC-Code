@@ -22,7 +22,8 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, const char * dir = "/scratc
   for (int fi=0;fi<runs;fi++){
     //loop over the number of runs you want to consider
 
-    TFile f(TString::Format("%s/hptpc_test_R%05d.raw.root",dir,run1+fi));
+    TString coreInput=Form("/hptpc_test_R%07d",run1+fi);
+    TFile f(dir+coreInput+".raw.root");
     if (f.IsZombie()) { //check that the file opens
     cout<<"file with run number "<< run1+fi<<" is a zombie"<<endl;
     continue; //go onto next run if it doesn't
@@ -31,7 +32,7 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, const char * dir = "/scratc
 
      //open the data from the file into a dataset
      d = new dmtpc::core::Dataset;
-     d->open(TString::Format("%s/hptpc_test_R%05d.raw.root",dir,run1+fi));
+     d->open(dir+coreInput+".raw.root");
 
      //output file
      TString output_name = Form("calc_rms_R%i.root",run1+fi);
@@ -63,19 +64,22 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, const char * dir = "/scratc
      double ccdTemp;
      int nevents = 0;
  
-    //This block creates a variable to store pixval data.
+    //This block get the x/y range and nbinx/y.
     const int stupidcppx = (int)(d->event()->ccdData(cam)->GetNbinsX());
     const int stupidcppy = (int)(d->event()->ccdData(cam)->GetNbinsY());
-    const int x = stupidcppx;
-    const int y = stupidcppy;
-    //Store rms values of all pixels
-    TH2F *pix =new TH2F("pix","rms of individual pixels",x,0,x,y,0,y);
-    pix->SetStats(0);
+    const int nbinsx = stupidcppx;
+    const int nbinsy = stupidcppy;
+    const int xmin=(int)(d->event()->ccdData(cam)->GetXaxis()->GetXmin());
+    const int xmax=(int)(d->event()->ccdData(cam)->GetXaxis()->GetXmax());
+    const int ymin=(int)(d->event()->ccdData(cam)->GetYaxis()->GetXmin());
+    const int ymax=(int)(d->event()->ccdData(cam)->GetYaxis()->GetXmax());
 
-    //This block creates 3 arrays for computing rms of each individual pixels
-    Double_t sum[x][y]
-            ,sumsquare[x][y]
-            ,pixrms[x][y];
+    TH2F *rmspix =new TH2F("rmspix","rms of individual pixels",nbinsx,xmin,xmax,nbinsy,ymin,ymax);
+    rmspix->SetStats(0);
+
+    //This block creates 2 arrays for computing rms of each individual pixels
+    Double_t sum[nbinsx][nbinsy]
+            ,sumsquare[nbinsx][nbinsy];
      
     //create branches for the variables you want to save to the tree
     t.Branch("mean",&mean);
@@ -101,8 +105,8 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, const char * dir = "/scratc
 
       ccdTemp = d->event()->ccdConfig(cam)->ccdTemp;
 
-      for (int m=0; m<x; m++){
-        for (int b=0; b<y; b++) {
+      for (int m=0; m<nbinsx; m++){
+        for (int b=0; b<nbinsy; b++) {
           Double_t temppixval=image->GetBinContent(m,b);
 
           //fill sum[][] and sumsquare[][]
@@ -127,13 +131,15 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, const char * dir = "/scratc
       delete gFit;
     }
 
-    //get rms of each pixel and store in (TH2F)pix
-     for(int j=0;j<x;j++)
+    //get rms of each pixel and store in (TH2F)rmspix
+     for(int j=0;j<nbinsx;j++)
      {
-       for(int k=0;k<y;k++)
+       for(int k=0;k<nbinsy;k++)
        {
-         pixrms[j][k]=(Double_t)TMath::Sqrt(sumsquare[j][k]/n-(sum[j][k]/n)*(sum[j][k]/n));
-         pix->Fill(j,k,pixrms[j][k]);
+         Double_t pixrms =(Double_t)TMath::Sqrt(sumsquare[j][k]/n-(sum[j][k]/n)*(sum[j][k]/n));
+         Int_t templocx = (Int_t)xmax/nbinsx*j;
+         Int_t templocy = (Int_t)ymax/nbinsy*k;
+         rmspix->Fill(templocx,templocy,pixrms);
        }
      }
 
@@ -154,7 +160,7 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, const char * dir = "/scratc
     image->Write();
     intensity->Write();
     bias->Write();
-    pix->Write();
+    rmspix->Write();
     }
   }
 }
