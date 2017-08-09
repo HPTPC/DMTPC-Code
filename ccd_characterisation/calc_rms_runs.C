@@ -1,7 +1,6 @@
 void calc_rms_runs(int run1 = 1167004, int runs = 1, const char * dir = "/scratch3/wparker2/dmtpc2/data/2017/06/raw")
 {// runs = number of runs you want to consider 
 //run1 is the runID of the first one 
-  //in the branch pixval. The size of output file is inflated by more than 1000 times
 //dir is the path to the directory with the raw data files in it
 
   gSystem->Load("$DMTPC_HOME/DmtpcCore/lib/libDmtpcCore.so");
@@ -34,9 +33,6 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, const char * dir = "/scratc
      d = new dmtpc::core::Dataset;
      d->open(dir+coreInput+".raw.root");
 
-     //output file
-     TString output_name = Form("calc_rms_R%i.root",run1+fi);
-     TFile * calc_rms1 = new TFile(output_name,"RECREATE");
      TTree t("pix_t","Pixel Tree");
      int nbins = 200;
 
@@ -154,6 +150,11 @@ void calc_rms_runs(int run1 = 1167004, int runs = 1, const char * dir = "/scratc
     gStyle->SetOptStat(1111);
     intensity->SetXTitle("ADU");
     intensity->SetYTitle("Number of Entries");
+
+     //output file
+     TString output_name = Form("calc_rms_R%i.root",run1+fi);
+     TFile * calc_rms1 = new TFile(output_name,"RECREATE");
+     assert(calc_rms1->IsOpen());
 
     //write tree to output file wherever you run the code from
     t.Write();
