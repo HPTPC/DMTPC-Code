@@ -6,6 +6,7 @@
 void rdRaw2PedValidate(int runId=1000000, int mode=0, TString outPath="./Alpha_March_4x4", int loc=0){  
 
   gSystem->Load("$DMTPC_HOME/DmtpcSkim/lib/libDmtpcSkim.so");
+  gSystem->Exec(Form("mkdir %s",outPath));
 
   dmtpc::skim::CcdPedMaker pedMk; //
 
