@@ -40,12 +40,15 @@ namespace dmtpc {
       ~CcdPedMaker();
       CcdPedMaker();
       void accumulatePed(const dmtpc::core::Event * eve );
+      void accumulatePedValidate(Int_t nbins);
 
       void initDims(const dmtpc::core::Dataset *ds , int camId, int camDaq);
+      void initDimsValidate(Int_t nbins);
 
       void saveHisto(TFile *, int flag);
       void ingest_pedSpecBig(TString fName); // back door
       int  computePed();
+      int computePedValidate();
       void setUserRebin(int x) {par_userRebin=x;}
 
     private:
@@ -56,7 +59,9 @@ namespace dmtpc {
       int agregReb;
 
       void  initHisto(); 
+      void initHistoValidate();
       void  initMask();
+      void initMaskValidate();
       void  setPar(float x, float y) {par_aduLo=x; cut_pedAvrHi=y;}
 
       const static int mxH=32;
@@ -88,6 +93,7 @@ namespace dmtpc {
 
     public:
       TCanvas  *can; // single canvas , servs also as a flag
+      TH2S *getBig(){return hBigPed;}
 
       ClassDef(CcdPedMaker,1);       
     }; 
