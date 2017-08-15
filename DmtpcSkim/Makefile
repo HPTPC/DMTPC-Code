@@ -16,8 +16,8 @@ BUILDDIR=build
 INCLUDEDIR=include
 BINDIR=bin
 
-#SRCS_J     = WeventIO.cc CcdPed_init.cc CcdPedMaker.cc CcdCalibMaker.cc CcdCluster_init.cc CcdClusterMaker.cc  AnaM3EveBlue.cc
-SRCS_J     = CcdPed_init.cc CcdPedMaker.cc 
+#SRCS_J     = WeventIO.cc CcdPed_init.cc CcdPedMaker.cc CcdCalibMaker.cc CcdCluster_init.cc CcdClusterMaker.cc  AnaM3EveBlue.cc CcdValidate.cc
+SRCS_J     = CcdPed_init.cc CcdPedMaker.cc CcdPedValidate.cc
 OBJS_J   = $(notdir $(patsubst %.cc,%.o,$(SRCS_J)))
 
 OBJS := $(addprefix $(BUILDDIR)/, $(LIBNAME)Cint.o  $(OBJS_J) )
