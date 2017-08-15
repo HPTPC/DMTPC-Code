@@ -27,7 +27,8 @@ void rdRaw2Ped(int runId=1213007, int mode=0, TString outPath="./Alpha_March_4x4
   gSystem->Load("$DMTPC_HOME/DmtpcCore/lib/libDmtpcCore.so");
   gSystem->Load("$DMTPC_HOME/DmtpcSkim/lib/libDmtpcSkim.so");
   //gSystem->Exec(TString::Format("%s",outPath));
-  gSystem->Exec(TString::Format("mkdir %s",outPath));//create output directory
+  TString out="mkdir "+outPath;
+  gSystem->Exec(out);//create output directory
 
   //enum { mxCam=4}; // there are 2 cameras for the current gain map data
   //dmtpc::skim::CcdPedMaker pedMk[mxCam];
