@@ -1,3 +1,4 @@
+rdRaw2PedValidate.C calculates pedestal for every pixel. To run this code, need to do -make in $DMTPC_HOME/DmtpcSkim/ directory.
 rdRaw2PedValidate.C is used to validate pedestal calculation code.
 To run the code, need to do -make in $DMTPC_HOME/DmtpcSkim.
 The binning is set by changing nReb. This binning is automatically passed to other files.
