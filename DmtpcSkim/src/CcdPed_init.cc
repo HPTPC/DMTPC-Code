@@ -15,8 +15,9 @@
 
 #include "CcdPedMaker.hh" 
 
-//=======================================
-//=======================================
+
+//======================================
+//======================================
 void dmtpc::skim::CcdPedMaker::initDims(const dmtpc::core::Dataset *ds , int camid,  int camsrc) {
 
   camId=camid;
@@ -84,10 +85,10 @@ void dmtpc::skim::CcdPedMaker::initDims(const dmtpc::core::Dataset *ds , int cam
   float peakAbscia= h1Dped->GetBinCenter(peakBin);
   printf("%s-frame0  MPV ADU=%.0f\n",coreName.Data(),peakAbscia);
   assert(peakAbscia>500); // sth went worng with range of ADU
-  setPar(peakAbscia-150*sqrt(agregReb),peakAbscia+350); // aduLo, pedAvrHi
+  setPar(peakAbscia-150*sqrt((Double_t)agregReb),peakAbscia+350); // aduLo, pedAvrHi
 
   // pedestal determination
-  par_pedWindowHalf=60*sqrt(agregReb); // in ADU
+  par_pedWindowHalf=60*sqrt((Double_t)agregReb); // in ADU
   
   // define sensitive pixel limits, note Hbook convention for the output
   if (nchX==1542) { // 2x2 bining
@@ -180,7 +181,7 @@ void dmtpc::skim::CcdPedMaker::ingest_pedSpecBig(TString fName) {
 
 //=======================================
 //=======================================
-void dmtpc::skim::CcdPedMaker::adjustCuts(){ 
+void dmtpc::skim::CcdPedMaker::adjustCuts(){
   cut_peakSum*=NtotEve;
 
   TH1 *h;
@@ -228,7 +229,7 @@ void dmtpc::skim::CcdPedMaker::initHisto() {
    
   }
 
-  int aduHi=par_aduLo+400*sqrt(agregReb), nAduBins=60; // defines range of pedestals spectra considered as reasonable
+  int aduHi=par_aduLo+400*sqrt((Double_t)agregReb), nAduBins=60; // defines range of pedestals spectra considered as reasonable
 
   // histos 1...9 
   hA[1]=0;
@@ -269,8 +270,10 @@ void dmtpc::skim::CcdPedMaker::initHisto() {
 
   //TH1S : histograms with one short per channel. Maximum bin content = 32767
   hBigPed=new TH2S(coreName+"_bigPed",coreName+Form(" pedestal spectra run=%d ; unified mBin maps to (iX,iY*NX) ; ADU",runId), maxMbin,0.5,maxMbin+0.5,nAduBins,par_aduLo,aduHi);
+  hBigPed->GetYaxis()->SetRange(1,nAduBins);
+  hBigPed->GetYaxis()->SetBit(TAxis::kAxisRange);
 
-  printf("pedMaker::initHisto(run=%d)  works w/ %d pixels, aduLo=%.0f pedAvrHi=%.0f\n",runId, maxMbin,par_aduLo, cut_pedAvrHi);
+  printf("pedMaker::initHisto(run=%d)  works w/ %d pixels, aduLo=%.0f, aduHi=%d, pedAvrHi=%.0f\n",runId, maxMbin,par_aduLo, aduHi,cut_pedAvrHi);
 
 }
 
