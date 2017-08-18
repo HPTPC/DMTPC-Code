@@ -1,6 +1,5 @@
-rdRaw2PedValidate.C calculates pedestal for every pixel. To run this code, need to do -make in $DMTPC_HOME/DmtpcSkim/ directory.
-rdRaw2PedValidate.C is used to validate pedestal calculation code.
-To run the code, need to do -make in $DMTPC_HOME/DmtpcSkim.
+rdRaw2Ped.C calculates pedestal for every pixel. To run this code, need to do -make in $DMTPC_HOME/DmtpcSkim/ directory.
+rdRaw2PedValidate.C is used to validate pedestal calculation code. To run the code, need to do -make in $DMTPC_HOME/DmtpcSkim.
 The binning is set by changing nReb. This binning is automatically passed to other files.
 The dimension of pixels is set by changing dim. This number is also hard coded in $DMTPC_HOME/DmtpcSkim/src/CcdPedValidate.cc. For nReb=8, dim=3080. For nReb=2,3,4, dim=3084.
 the number of events is set by changing nExpo.
