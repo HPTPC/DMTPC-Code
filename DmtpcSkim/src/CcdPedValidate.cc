@@ -60,6 +60,11 @@
     for(int jchY=1; jchY<=nchY; jchY++) { // range 1,N
       int mBin=hPedStat->GetBin(jchX, jchY); //  pick any 2D histo for this
       if (  hPedStat->GetBinContent(mBin) ) continue; // drop masked channels
+      if(jchX==500&&jchY==500)
+      {
+      hBigPed->Fill(mBin,(Short_t)ran.Gaus(2500,1));
+      continue;
+      }
       hBigPed->Fill(mBin,(Short_t)ran.Gaus(2500,20));
     }
 }
@@ -175,10 +180,10 @@ h1Dped=new TH1D("aduLo","raw ADU spectrum lower end, all input; ADU",1000,0,5000
         }
 int peakBin=h1Dped->GetMaximumBin();
   float peakAbscia= h1Dped->GetBinCenter(peakBin);
-    setPar(peakAbscia-150*sqrt(agregReb),peakAbscia+350); // aduLo, pedAvrHi
+    setPar(peakAbscia-150*sqrt((Double_t)agregReb),peakAbscia+350); // aduLo, pedAvrHi
 
       // pedestal determination
-par_pedWindowHalf=60*sqrt(agregReb); // in ADU
+par_pedWindowHalf=60*sqrt((Double_t)agregReb); // in ADU
 
   // define sensitive pixel limits, note Hbook convention for the output
 if (nchX==1542) { // 2x2 bining
@@ -241,7 +246,7 @@ if (nchX==1542) { // 2x2 bining
      mesg.Draw();
      can->Print( pdfName[i]+"(","pdf");
    }
-   int aduHi=par_aduLo+400*sqrt(agregReb), nAduBins=60; // defines range of pedestals spectra considered as reasonable
+   int aduHi=par_aduLo+800*sqrt((Double_t)agregReb), nAduBins=120; // defines range of pedestals spectra considered as reasonable
    // histos 1...9 
    hA[1]=0;
    hA[9]=0;

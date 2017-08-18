@@ -229,7 +229,7 @@ void dmtpc::skim::CcdPedMaker::initHisto() {
    
   }
 
-  int aduHi=par_aduLo+400*sqrt((Double_t)agregReb), nAduBins=60; // defines range of pedestals spectra considered as reasonable
+  int aduHi=par_aduLo+800*sqrt((Double_t)agregReb), nAduBins=120; // defines range of pedestals spectra considered as reasonable
 
   // histos 1...9 
   hA[1]=0;
