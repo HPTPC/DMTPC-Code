@@ -11,7 +11,7 @@ void load_libs_and_classes()
 
 	 // loaded libs, MUST finished with empty terminating string
 	 //	 TString lnames[] = {"config", "bz2", ""};
-	 TString lnames[] = {"DmtpcCore", "DmtpcAnalysis", ""};
+    TString lnames[] = {"DmtpcCore", "DmtpcAnalysis","DmtpcSkim", ""};
 
 	 // status of loaded libs (desribed in TSystem::Load method doc):
 	 TString load_status[] = {"ok", "already loaded", "failed to load", "version_mismatch"};
@@ -55,28 +55,28 @@ void load_libs_and_classes()
 
 // set of macro command pars MUST BE IDENTICAL to pars of $mac script
 // belo as they are all passed to it w/o processing
-void run_calc_rms
+void run_rdRaw2Ped
 (
  int run =1
  ,int cam = 0
- , const char * dir = "/scratch3/wparker2/dmtpc2/data/2017/10/raw/"
+ , const char * dir = "/scratch3/wparker2/dmtpc2/data/2017/06/raw/"
  )
 {  
-  Info("run_calc_rms","Started");
+  Info("run_rdRaw2Ped","Started");
   gSystem->AddIncludePath("-I$DMTPC_HOME/DmtpcCore/include");
+  gSystem->AddIncludePath("-I$DMTPC_HOME/DmtpcSkim/include");
   load_libs_and_classes();
 
-  TString macro_file="calc_rms.C+g";
-  Info("run_calc_rms","Loading main macro='%s'... ",macro_file.Data());
+  TString macro_file="rdRaw2Ped.C+g";
+  Info("run_rdRaw2Ped","Loading main macro='%s'... ",macro_file.Data());
   
   if (gROOT->LoadMacro(macro_file))
-    Fatal("run_calc_rms","Can't load macro='%s'",macro_file.Data());
+    Fatal("run_rdRaw2Ped","Can't load macro='%s'",macro_file.Data());
 
   // MAIN JOB 
-  Info("run_calc_rms","It seems like ok, starting main job now... ");
-  for (int camnum=0; camnum<4 ; camnum++)
-    {
-      calc_rms(run,camnum,dir);
-    }
-  Info("run_calc_rms","Finished");
-} // run_calc_rms
+  Info("run_rdRaw2Ped","It seems like ok, starting main job now... ");
+
+  rdRaw2Ped(run,cam,dir,0);
+  
+  Info("run_rdRaw2Ped","Finished");
+} // run_rdRaw2Ped
