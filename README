@@ -1,3 +1,5 @@
+WARNING: THIS IS NOT THE VERSION OF CODE RUNNING ON THE COMPUTERS IN THE LAB. THE DMTPC-M3DAQ REPOSITORY HOSTS THE ACTUALLY USED CODE
+
 This is the code from the DMTPC used for analysing data from the CCDs.
 
 Inside ccd_characterisation, run_calc_rms.C calculates the camera noise for a run. The bias is subtracted
